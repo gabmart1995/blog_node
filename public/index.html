@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es-VE">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Blog de Videojuegos</title>
+</head>
+<body>
+    <!-- cabecera -->
+    <header id="cabecera">
+        <div id="logo">
+            <a href="/">Blog de Videojuegos</a>
+        </div>
+
+        <!-- menu -->
+        <nav id="menu">
+            <ul>
+                <li>
+                    <a href="/">Inicio</a>
+                </li>
+                <li>
+                    <a href="/">Categoria 1</a>
+                </li>
+                <li>
+                    <a href="/">Categoria 2</a>
+                </li>
+                <li>
+                    <a href="/">Categoria 3</a>
+                </li>
+                <li>
+                    <a href="/">Categoria 4</a>
+                </li>
+                <li>
+                    <a href="/">Sobre mi</a>
+                </li>
+                <li>
+                    <a href="/">Contacto</a>
+                </li>
+            </ul>    
+        </nav>
+    </header>
+    
+    <div id="contenedor">
+        
+        <!-- sidebar -->
+        <aside id="sidebar">
+            <div id="login" class="bloque">
+                <h3>Identificate</h3>
+                <form action="/login" method="POST">
+
+                    <label for="email-login">Email</label>
+                    <input type="email" name="email" id="email-login" />
+
+                    <label for="password-login">Password</label>
+                    <input type="password" name="password" id="password-login" />
+
+                    <input type="submit" value="entrar" />
+                </form>
+            </div>
+
+            <div id="register" class="bloque">
+                <h3>Registro</h3>
+                <form action="/register" method="POST">
+
+                    <label for="name">Nombre</label>
+                    <input type="text" name="name" id="name" />
+
+                    <label for="surname">Apellidos</label>
+                    <input type="text" name="surname" id="surname" />
+
+                    <label for="email-register">Email</label>
+                    <input type="email" name="email" id="email-register" />
+
+                    <label for="password-register">Password</label>
+                    <input type="password" name="password" id="password-register" />
+
+                    <input type="submit" value="registrar" />
+                </form>
+            </div>
+        </aside>
+
+        <!-- Caja principal -->
+        <div id="principal">
+            <h1>Ultimas entradas</h1>
+            <article class="entrada">
+                <a href="">
+                    <h2>Titulo de entrada</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia non distinctio obcaecati explicabo corporis rem sed tempora adipisci nobis natus, atque consequuntur. Amet molestiae exercitationem quasi ipsa, odit at repudiandae.
+                    </p>
+                </a>
+            </article>
+
+            <article class="entrada">
+                <a href="">
+                    <h2>Titulo de entrada</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia non distinctio obcaecati explicabo corporis rem sed tempora adipisci nobis natus, atque consequuntur. Amet molestiae exercitationem quasi ipsa, odit at repudiandae.
+                    </p>
+                </a>
+            </article>
+
+            <article class="entrada">
+                <a href="">
+                    <h2>Titulo de entrada</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia non distinctio obcaecati explicabo corporis rem sed tempora adipisci nobis natus, atque consequuntur. Amet molestiae exercitationem quasi ipsa, odit at repudiandae.
+                    </p>
+                </a>
+            </article>
+
+            <article class="entrada">
+                <a href="">
+                    <h2>Titulo de entrada</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia non distinctio obcaecati explicabo corporis rem sed tempora adipisci nobis natus, atque consequuntur. Amet molestiae exercitationem quasi ipsa, odit at repudiandae.
+                    </p>
+                </a>
+            </article>
+            
+            <div id="ver-todas">
+                <a href="">Ver Todas las Entradas</a>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    
+    <!-- pie de pagina -->
+    <footer id="pie">
+        <p>Desarrollado por Gabriel Martinez &copy; 2022</p>
+    </footer>
+</body>
+</html>
