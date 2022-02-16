@@ -1,7 +1,6 @@
 const express = require('express')
-const bcrypt = require('bcryptjs')
 const router = express.Router()
-const { executeQuery, SQL } = require('../database/database')
+const { insertUser, loginUser, getCategories, getLastEntries } = require('../helpers/helpers')
 const state = require('../state/state')
 
 const regex = Object.freeze({
@@ -9,39 +8,54 @@ const regex = Object.freeze({
     emailString: (/^[a-z0-9]+@[a-z]{4,}\.[a-z]{3,}$/) 
 })
 
-router.get('/', ( request, response ) => {
+// index
+router.get('/', async ( request, response ) => {
     
-    response.render('index', state.getState() )
+    try {
 
-    // limpia el estado despues de renderizar la vista
-    // para la limpieza de los formularios
-    state.clearState()
+        const categories = await getCategories()
+        const lastEntries = await getLastEntries()
+
+        state.dispatch( state.getCategoriesAction( categories ) )
+        state.dispatch( state.getLastEntriesAction( lastEntries ) )
+
+    } catch ( error ) {
+
+        state.dispatch( state.getCategoriesAction([]) )
+        state.dispatch( state.getLastEntriesAction([]) )
+        
+        console.log( error )
+        
+    } finally {
+        
+        // console.log( state.getState() )
+        response.render('index', state.getState() )
+
+        // limpia el estado despues de renderizar la vista
+        // para la limpieza de los formularios
+        state.clearState()
+    }
+})
+
+// logout session
+router.get('/logout', ( request, response ) => {
+
+    const STATE = state.getState()
+
+    if ( STATE.login ) {
+        state.dispatch( state.logoutAction() )
+    }
+
+    console.log( STATE )
+
+    response.redirect('/')
 })
 
 // register
 router.post('/register', async ( request, response ) => {
     
-    const form = request.body;
-    
+    const form = request.body
     const errors = new Map()
-    const insertUser = () => new Promise( ( resolve, reject ) => {
-        
-        executeQuery(SQL.register, form, ( error ) => {
-            
-            if ( error ) {
-                
-                console.error( error )
-                errors.set('general', 'Fallo al guardar usuario')
-
-                reject( error )
-                
-                return 
-            }
-            
-            resolve()
-        })
-    })
-
 
     if ( !form.name || !regex.string.test( form.name.trim() ) ) {
         errors.set('name', 'el nombre no es valido')
@@ -78,16 +92,14 @@ router.post('/register', async ( request, response ) => {
         
         try {
                 
-            let password_cifer = bcrypt.hashSync( form.password, 4 )    
-            form.password = password_cifer
-
-            await insertUser();
+            await insertUser( form );
 
             state.dispatch( state.registerAction( true ) )
             
         } catch ( error ) {
 
             // console.error( error )
+            errors.set('general', 'Fallo al guardar usuario')
 
             state.dispatch( state.registerAction( false ) )
             state.dispatch( 
@@ -106,47 +118,11 @@ router.post('/register', async ( request, response ) => {
     response.redirect('/');
 })
 
+// login
 router.post('/login', async ( request, response ) => {
     
     const form = request.body
     const errorsLogin = new Map()
-    const login = () => new Promise(( resolve, reject ) => {
-
-        executeQuery( SQL.login, form, ( error, results ) => {
-
-            if ( error ) {
-
-                console.error( error )
-                errorsLogin.set('general', 'Problemas al autenticar usuario')
-
-                reject( error )
-                
-                return;
-            }
-
-            // console.log( results )
-
-            if ( results.length > 0 ) {
-
-                let [ userLogged ] = results;
-
-                if ( bcrypt.compareSync( form.password,  userLogged.password ) ) {
-                    
-                    // console.log('usuario logueado');
-                    
-                    resolve( userLogged );
-                    
-                    return;
-                }
-            }
-
-            // console.log('credenciales invalidas');
-
-            errorsLogin.set('general', 'Credenciales invalidas')
-
-            reject('Credenciales invalidas')
-        })
-    })
 
     if ( !form.email || !regex.emailString.test( form.email.trim() )  ) {
         errorsLogin.set('email', 'El email no es valido')
@@ -171,7 +147,7 @@ router.post('/login', async ( request, response ) => {
         
         try {
             
-           const userLogged = await login()
+           const userLogged = await loginUser( form )
 
             state.dispatch( state.loginAction( true ) )
             state.dispatch( state.userLoggedAction( userLogged ) )
@@ -183,7 +159,7 @@ router.post('/login', async ( request, response ) => {
                 state.errorsLoginAction({
                     email: errorsLogin.get('email'),
                     password: errorsLogin.get('password'),
-                    general: errorsLogin.get('general')
+                    general: error.message
                 }) 
             )   
         }

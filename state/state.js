@@ -4,7 +4,9 @@ let STATE = {
     errorsLogin: null,
     register: false,
     login: false,
-    userLogged: null
+    userLogged: null,
+    categories: [],
+    lastEntries: []
 }
 
 function registerAction( payload ) {
@@ -27,17 +29,30 @@ function userLoggedAction( payload ) {
     return { type: 'userLogged', payload }
 }
 
+function logoutAction() {
+    return { type: 'logout' }
+}
+
+function getCategoriesAction( payload ) {
+    return { type: 'getCategories', payload }
+}
+
+function getLastEntriesAction( payload ) {
+    return { type: 'getLastEntries', payload }
+}
+
 function getState() {
     return STATE;
 }
 
 function clearState() {
     STATE = {
+        ...STATE,
         errorsRegister: null,
         errorsLogin: null,
         register: false,
-        login: false,
-        userLogged: null
+        categories: [],
+        lastEntries: []
     }
 }
 
@@ -46,6 +61,9 @@ function dispatch( action ) {
     switch ( action.type ) {
         case 'login':
             return STATE = { ...STATE, login: action.payload }
+        
+        case 'logout':
+            return STATE = { ...STATE, login: false, userLogged: null }
 
         case 'register':
             return STATE = { ...STATE, register: action.payload }
@@ -59,6 +77,12 @@ function dispatch( action ) {
         case 'userLogged': 
             return STATE = { ...STATE, userLogged: action.payload }
 
+        case 'getCategories':
+            return STATE = { ...STATE, categories: action.payload }
+
+        case 'getLastEntries':
+            return STATE = { ...STATE, lastEntries: action.payload }
+        
         default:
             return STATE
     }
@@ -72,5 +96,8 @@ module.exports = {
     errorsRegisterAction,
     errorsLoginAction,
     clearState,
-    userLoggedAction
+    userLoggedAction,
+    logoutAction,
+    getCategoriesAction,
+    getLastEntriesAction
 }

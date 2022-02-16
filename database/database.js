@@ -2,7 +2,9 @@ const mysql = require('mysql')
 
 const SQL = Object.freeze({
     login: 'SELECT * FROM usuarios WHERE email = :email',
-    register: 'INSERT INTO usuarios VALUES ( null, :name, :surname, :email, :password, CURDATE() );'
+    register: 'INSERT INTO usuarios VALUES ( null, :name, :surname, :email, :password, CURDATE() );',
+    getCategories: 'SELECT * FROM categorias ORDER BY id ASC;',
+    getLastEntries: 'SELECT e.*, c.nombre AS categoria FROM entradas e INNER JOIN categorias c ON e.categoria_id = c.id ORDER BY e.id DESC LIMIT 4;'
 })
 
 const connection = mysql.createConnection({

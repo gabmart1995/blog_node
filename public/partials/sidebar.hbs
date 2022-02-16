@@ -1,86 +1,99 @@
         <!-- sidebar -->
         <aside id="sidebar">
-            <div id="login" class="bloque">
-                <h3>Identificate</h3>
 
-                {{#if errorsLogin }}
-                    {{#if errorsLogin.general }}
-                        <div class="alerta alerta-error">{{ errorsLogin.general }}</div>
-                    {{/if}}
-                {{/if}}
+            {{#if login }}
+                <div id="usuario-logueado" class="bloque">
+                    <h3>Bienvenido, {{ userLogged.nombre }} {{ userLogged.apellidos }}</h3>
+                    <a href="" class="boton boton-verde">Crear entradas</a>
+                    <a href="" class="boton">Crear categorias</a>
+                    <a href="" class="boton boton-naranja">Mis datos</a>
+                    <a href="/logout" class="boton boton-rojo">Cerrar Sesion</a>
+                </div>
+            
+            {{else}}
+                <div id="login" class="bloque">
+                    <h3>Identificate</h3>
 
-                <form action="/login" method="POST">
-
-                    <label for="email-login">Email</label>
-                    <input type="email" name="email" id="email-login" />
                     {{#if errorsLogin }}
-                        {{#if errorsLogin.email }}
-                            <div class="alerta alerta-error">{{ errorsLogin.email }}</div>
+                        {{#if errorsLogin.general }}
+                            <div class="alerta alerta-error">{{ errorsLogin.general }}</div>
                         {{/if}}
                     {{/if}}
+
+                    <form action="/login" method="POST">
+
+                        <label for="email-login">Email</label>
+                        <input type="email" name="email" id="email-login" />
+                        {{#if errorsLogin }}
+                            {{#if errorsLogin.email }}
+                                <div class="alerta alerta-error">{{ errorsLogin.email }}</div>
+                            {{/if}}
+                        {{/if}}
+                        
+                        <label for="password-login">Password</label>
+                        <input type="password" name="password" id="password-login" />
+                        {{#if errorsLogin }}
+                            {{#if errorsLogin.password }}
+                                <div class="alerta alerta-error">{{ errorsLogin.password }}</div>
+                            {{/if}}
+                        {{/if}}
+
+                        <input type="submit" value="Entrar" />
+                    </form>
+                </div>
+            
+                <div id="register" class="bloque">
                     
-                    <label for="password-login">Password</label>
-                    <input type="password" name="password" id="password-login" />
-                    {{#if errorsLogin }}
-                        {{#if errorsLogin.password }}
-                            <div class="alerta alerta-error">{{ errorsLogin.password }}</div>
-                        {{/if}}
+                    <h3>Registrate</h3>
+
+                    <!-- registro exitoso -->
+                    {{#if register }}
+                        <div class="alerta alerta-exito">Registro de usuario completado</div>
                     {{/if}}
 
-                    <input type="submit" value="entrar" />
-                </form>
-            </div>
-
-            <div id="register" class="bloque">
-                
-                <h3>Registrate</h3>
-
-                <!-- registro exitoso -->
-                {{#if register }}
-                    <div class="alerta alerta-exito">Registro de usuario completado</div>
-                {{/if}}
-
-                {{#if errorsRegister }}
-                    {{#if errorsRegister.general }}
-                        <div class="alerta alerta-error">{{ errorsRegister.general }}</div>
-                    {{/if}}
-                {{/if}}
-
-                <form action="/register" method="POST">
-
-                    <label for="name">Nombre</label>
-                    <input type="text" name="name" id="name" />
                     {{#if errorsRegister }}
-                        {{#if errorsRegister.name }}
-                            <div class="alerta alerta-error">{{ errorsRegister.name }}</div>
+                        {{#if errorsRegister.general }}
+                            <div class="alerta alerta-error">{{ errorsRegister.general }}</div>
                         {{/if}}
                     {{/if}}
 
-                    <label for="surname">Apellidos</label>
-                    <input type="text" name="surname" id="surname" />
-                    {{#if errorsRegister }}
-                        {{#if errorsRegister.surname }}
-                            <div class="alerta alerta-error">{{ errorsRegister.surname }}</div>
-                        {{/if}}
-                    {{/if}}
+                    <form action="/register" method="POST">
 
-                    <label for="email-register">Email</label>
-                    <input type="email" name="email" id="email-register" />
-                    {{#if errorsRegister }}
-                        {{#if errorsRegister.email }}
-                            <div class="alerta alerta-error">{{ errorsRegister.email }}</div>
+                        <label for="name">Nombre</label>
+                        <input type="text" name="name" id="name" />
+                        {{#if errorsRegister }}
+                            {{#if errorsRegister.name }}
+                                <div class="alerta alerta-error">{{ errorsRegister.name }}</div>
+                            {{/if}}
                         {{/if}}
-                    {{/if}}
 
-                    <label for="password-register">Password</label>
-                    <input type="password" name="password" id="password-register" />
-                    {{#if errorsRegister }}
-                        {{#if errorsRegister.password }}
-                            <div class="alerta alerta-error">{{ errorsRegister.password }}</div>
+                        <label for="surname">Apellidos</label>
+                        <input type="text" name="surname" id="surname" />
+                        {{#if errorsRegister }}
+                            {{#if errorsRegister.surname }}
+                                <div class="alerta alerta-error">{{ errorsRegister.surname }}</div>
+                            {{/if}}
                         {{/if}}
-                    {{/if}}
 
-                    <input type="submit" value="registrar" />
-                </form>
-            </div>
+                        <label for="email-register">Email</label>
+                        <input type="email" name="email" id="email-register" />
+                        {{#if errorsRegister }}
+                            {{#if errorsRegister.email }}
+                                <div class="alerta alerta-error">{{ errorsRegister.email }}</div>
+                            {{/if}}
+                        {{/if}}
+
+                        <label for="password-register">Password</label>
+                        <input type="password" name="password" id="password-register" />
+                        {{#if errorsRegister }}
+                            {{#if errorsRegister.password }}
+                                <div class="alerta alerta-error">{{ errorsRegister.password }}</div>
+                            {{/if}}
+                        {{/if}}
+
+                        <input type="submit" value="Registrar" />
+                    </form>
+                </div>
+            {{/if}}
+
         </aside>

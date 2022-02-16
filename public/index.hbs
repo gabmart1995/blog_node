@@ -5,41 +5,24 @@
     <!-- Caja principal -->
     <div id="principal">
         <h1>Ultimas entradas</h1>
-        <article class="entrada">
-            <a href="">
-                <h2>Titulo de entrada</h2>
-                <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia non distinctio obcaecati explicabo corporis rem sed tempora adipisci nobis natus, atque consequuntur. Amet molestiae exercitationem quasi ipsa, odit at repudiandae.
-                </p>
-            </a>
-        </article>
 
-        <article class="entrada">
-            <a href="">
-                <h2>Titulo de entrada</h2>
-                <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia non distinctio obcaecati explicabo corporis rem sed tempora adipisci nobis natus, atque consequuntur. Amet molestiae exercitationem quasi ipsa, odit at repudiandae.
-                </p>
-            </a>
-        </article>
+        {{#if lastEntries}}
+            {{#each lastEntries as | entry |}}
+                <article class="entrada">
+                    <a href="">
+                        <h2>{{ entry.titulo }}</h2>
+                        <span class="fecha">{{ entry.categoria }} | {{ entry.fecha }}</span>
+                        <p>{{ entry.descripcion }}</p>
+                    </a>
+                </article>
+            {{/each}}
+        
+        {{else }}
+            <article class="entrada">
+                <p style="text-align: center;">No hay entradas disponibles</p>    
+            </article>
 
-        <article class="entrada">
-            <a href="">
-                <h2>Titulo de entrada</h2>
-                <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia non distinctio obcaecati explicabo corporis rem sed tempora adipisci nobis natus, atque consequuntur. Amet molestiae exercitationem quasi ipsa, odit at repudiandae.
-                </p>
-            </a>
-        </article>
-
-        <article class="entrada">
-            <a href="">
-                <h2>Titulo de entrada</h2>
-                <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia non distinctio obcaecati explicabo corporis rem sed tempora adipisci nobis natus, atque consequuntur. Amet molestiae exercitationem quasi ipsa, odit at repudiandae.
-                </p>
-            </a>
-        </article>
+        {{/if}}
         
         <div id="ver-todas">
             <a href="">Ver Todas las Entradas</a>
