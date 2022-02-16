@@ -1,0 +1,23 @@
+<!-- header -->
+{{> header }}    
+{{> sidebar }}
+<div id="principal">
+    <h1>Crear categoria</h1>
+    <p>
+        Anade una nuevas categorias al blog, para que los usuarios puedan 
+        usarla
+    </p><br />
+    <form action="/save-category" method="POST">
+        
+        <label for="nombre_category">Nombre de la categoria:</label>
+        <input type="text" name="nombre" id="nombre_category">
+        {{#if errorsCategory}}
+            {{#if errorsCategory.nombre}}
+                <div class="alerta alerta-error">{{ errorsCategory.nombre }}</div>
+            {{/if}}
+        {{/if}}
+
+        <input type="submit" value="Guardar">
+    </form>
+</div>
+{{> footer }}

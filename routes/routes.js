@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { insertUser, loginUser, getCategories, getLastEntries } = require('../helpers/helpers')
+const { insertUser, loginUser, getCategories, getLastEntries, insertCategory } = require('../helpers/helpers')
 const state = require('../state/state')
 
 const regex = Object.freeze({
@@ -46,7 +46,7 @@ router.get('/logout', ( request, response ) => {
         state.dispatch( state.logoutAction() )
     }
 
-    console.log( STATE )
+    // console.log( STATE )
 
     response.redirect('/')
 })
@@ -167,6 +167,74 @@ router.post('/login', async ( request, response ) => {
     }
 
     response.redirect('/')
+})
+
+// category
+router.get('/create-category', ( request, response ) => {
+    
+    const STATE = state.getState()
+
+    // verificar si el usuario esta logueado
+    if ( !STATE.login ) {
+        
+        response.redirect('/')
+        
+        return
+    }
+    
+    response.render('create-category', STATE )
+
+    state.clearState()
+})
+
+
+router.post('/save-category', async ( request, response ) => {
+    
+    const form = request.body;
+    const errorsCategory = new Map()
+
+    if ( !form.nombre || !regex.string.test( form.nombre.trim() ) ) {
+        errorsCategory.set('nombre', 'El nombre de la categoria no es valido')
+    }
+
+    if ( errorsCategory.size > 0 ) {
+
+        // console.log( errorsCategory )
+
+        state.dispatch( state.registerAction( false ) )
+        state.dispatch( 
+            state.errorsCategoryAction({
+                nombre: errorsCategory.get('nombre')
+            }) 
+        )
+
+        response.redirect('/create-category')
+
+    } else {
+        
+        try {
+            
+            await insertCategory( form )
+            
+            state.dispatch( state.registerAction( true ) )
+
+            response.redirect('/')
+
+        } catch ( error ) {
+            
+            // console.error( error )
+
+            state.dispatch( state.registerAction( false ) )
+            state.dispatch( 
+                state.errorsCategoryAction({
+                    nombre: errorsCategory.get('nombre'),
+                    general: error.message
+                }) 
+            )
+
+            response.redirect('/create-category')
+        }
+    }
 })
 
 module.exports = router

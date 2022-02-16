@@ -25,6 +25,24 @@ function insertUser( form ) {
     })    
 }
 
+function insertCategory( form ) {
+    return new Promise(( resolve, reject ) => {
+        
+        executeQuery( SQL.insertCategory, form, ( error ) => {
+
+            if ( error ) {
+                console.error( error )
+                
+                reject( new Error('No se pudo registrar la categoria') )
+                
+                return
+            }
+
+            resolve()
+        })
+    })
+}
+
 function loginUser( form ) {
 
     return new Promise(( resolve, reject ) => {
@@ -117,5 +135,6 @@ module.exports = {
     insertUser,
     loginUser,
     getCategories,
-    getLastEntries
+    getLastEntries,
+    insertCategory
 }
