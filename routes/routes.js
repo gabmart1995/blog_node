@@ -4,6 +4,11 @@ const router = express.Router()
 const { executeQuery, SQL } = require('../database/database')
 const state = require('../state/state')
 
+const regex = Object.freeze({
+    string: (/^[A-Za-z\s]{1,25}$/),
+    emailString: (/^[a-z0-9]+@[a-z]{4,}\.[a-z]{3,}$/) 
+})
+
 router.get('/', ( request, response ) => {
     
     response.render('index', state.getState() )
@@ -17,10 +22,6 @@ router.get('/', ( request, response ) => {
 router.post('/register', async ( request, response ) => {
     
     const form = request.body;
-    const regex = Object.freeze({
-        string: (/^[A-Za-z\s]{1,25}$/),
-        emailString: (/^[a-z0-9]+@[a-z]{4,}\.[a-z]{3,}$/) 
-    })
     
     const errors = new Map()
     const insertUser = () => new Promise( ( resolve, reject ) => {
@@ -37,28 +38,24 @@ router.post('/register', async ( request, response ) => {
                 return 
             }
             
-            register = true
-
             resolve()
         })
     })
 
-    // flag de registro
-    let register = false
 
-    if ( !form.name || !regex.string.test( form.name ) ) {
+    if ( !form.name || !regex.string.test( form.name.trim() ) ) {
         errors.set('name', 'el nombre no es valido')
     }
 
-    if ( !form.surname || !regex.string.test( form.surname ) ) {
+    if ( !form.surname || !regex.string.test( form.surname.trim() ) ) {
         errors.set('surname', 'el apellido es valido')
     }
 
-    if ( !form.email || !regex.emailString.test( form.email ) ) {
+    if ( !form.email || !regex.emailString.test( form.email.trim() ) ) {
         errors.set('email', 'El email no es valido')
     }
 
-    if ( !form.password || form.password.length === 0 ) {
+    if ( !form.password || form.password.trim().length === 0 ) {
         errors.set('password', 'password esta vacio')
     }
 
@@ -107,6 +104,93 @@ router.post('/register', async ( request, response ) => {
 
     // redirecciona al index
     response.redirect('/');
+})
+
+router.post('/login', async ( request, response ) => {
+    
+    const form = request.body
+    const errorsLogin = new Map()
+    const login = () => new Promise(( resolve, reject ) => {
+
+        executeQuery( SQL.login, form, ( error, results ) => {
+
+            if ( error ) {
+
+                console.error( error )
+                errorsLogin.set('general', 'Problemas al autenticar usuario')
+
+                reject( error )
+                
+                return;
+            }
+
+            // console.log( results )
+
+            if ( results.length > 0 ) {
+
+                let [ userLogged ] = results;
+
+                if ( bcrypt.compareSync( form.password,  userLogged.password ) ) {
+                    
+                    // console.log('usuario logueado');
+                    
+                    resolve( userLogged );
+                    
+                    return;
+                }
+            }
+
+            // console.log('credenciales invalidas');
+
+            errorsLogin.set('general', 'Credenciales invalidas')
+
+            reject('Credenciales invalidas')
+        })
+    })
+
+    if ( !form.email || !regex.emailString.test( form.email.trim() )  ) {
+        errorsLogin.set('email', 'El email no es valido')
+    }
+
+    if ( !form.password || form.password.trim().length === 0 ) {
+        errorsLogin.set('password', 'El password no es valido')
+    }
+
+    // comprobacion de errores
+    if ( errorsLogin.size > 0 ) {
+    
+        state.dispatch( state.loginAction( false ) )
+        state.dispatch( 
+            state.errorsLoginAction({
+                email: errorsLogin.get('email'),
+                password: errorsLogin.get('password')
+            }) 
+        )
+        
+    } else {
+        
+        try {
+            
+           const userLogged = await login()
+
+            state.dispatch( state.loginAction( true ) )
+            state.dispatch( state.userLoggedAction( userLogged ) )
+            
+        } catch ( error ) {
+            
+            state.dispatch( state.loginAction( false ) )
+            state.dispatch( 
+                state.errorsLoginAction({
+                    email: errorsLogin.get('email'),
+                    password: errorsLogin.get('password'),
+                    general: errorsLogin.get('general')
+                }) 
+            )   
+        }
+    
+    }
+
+    response.redirect('/')
 })
 
 module.exports = router

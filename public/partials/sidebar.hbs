@@ -2,13 +2,30 @@
         <aside id="sidebar">
             <div id="login" class="bloque">
                 <h3>Identificate</h3>
+
+                {{#if errorsLogin }}
+                    {{#if errorsLogin.general }}
+                        <div class="alerta alerta-error">{{ errorsLogin.general }}</div>
+                    {{/if}}
+                {{/if}}
+
                 <form action="/login" method="POST">
 
                     <label for="email-login">Email</label>
                     <input type="email" name="email" id="email-login" />
-
+                    {{#if errorsLogin }}
+                        {{#if errorsLogin.email }}
+                            <div class="alerta alerta-error">{{ errorsLogin.email }}</div>
+                        {{/if}}
+                    {{/if}}
+                    
                     <label for="password-login">Password</label>
                     <input type="password" name="password" id="password-login" />
+                    {{#if errorsLogin }}
+                        {{#if errorsLogin.password }}
+                            <div class="alerta alerta-error">{{ errorsLogin.password }}</div>
+                        {{/if}}
+                    {{/if}}
 
                     <input type="submit" value="entrar" />
                 </form>
@@ -20,7 +37,7 @@
 
                 <!-- registro exitoso -->
                 {{#if register }}
-                    <div class="alerta alerta-exito">Registro completado</div>
+                    <div class="alerta alerta-exito">Registro de usuario completado</div>
                 {{/if}}
 
                 {{#if errorsRegister }}

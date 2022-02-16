@@ -1,14 +1,14 @@
 const mysql = require('mysql')
 
 const SQL = Object.freeze({
-    login: '',
+    login: 'SELECT * FROM usuarios WHERE email = :email',
     register: 'INSERT INTO usuarios VALUES ( null, :name, :surname, :email, :password, CURDATE() );'
 })
 
 const connection = mysql.createConnection({
     host: 'localhost',
-    user: 'test',
-    password: '123456',
+    user: 'root',
+    password: '',
     database: 'blog_master'
 })
 

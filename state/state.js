@@ -1,8 +1,10 @@
 // modulo del estado de la aplicacion
 let STATE = {
     errorsRegister: null,
+    errorsLogin: null,
     register: false,
-    login: false
+    login: false,
+    userLogged: null
 }
 
 function registerAction( payload ) {
@@ -17,6 +19,13 @@ function errorsRegisterAction( payload ) {
     return { type: 'errorsRegister', payload }
 }
 
+function errorsLoginAction( payload ) {
+    return { type: 'errorsLogin', payload }
+}
+
+function userLoggedAction( payload ) {
+    return { type: 'userLogged', payload }
+}
 
 function getState() {
     return STATE;
@@ -25,8 +34,10 @@ function getState() {
 function clearState() {
     STATE = {
         errorsRegister: null,
+        errorsLogin: null,
         register: false,
-        login: false
+        login: false,
+        userLogged: null
     }
 }
 
@@ -42,11 +53,16 @@ function dispatch( action ) {
         case 'errorsRegister':
             return STATE = { ...STATE, errorsRegister: action.payload }
 
+        case 'errorsLogin': 
+            return STATE = { ...STATE, errorsLogin: action.payload }
+
+        case 'userLogged': 
+            return STATE = { ...STATE, userLogged: action.payload }
+
         default:
             return STATE
     }
 }
-
 
 module.exports = {
     dispatch,
@@ -54,8 +70,7 @@ module.exports = {
     registerAction,
     loginAction,
     errorsRegisterAction,
-    clearState
+    errorsLoginAction,
+    clearState,
+    userLoggedAction
 }
-
-
-
