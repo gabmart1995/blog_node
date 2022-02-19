@@ -3,6 +3,7 @@ let STATE = {
     errorsRegister: null,
     errorsLogin: null,
     errorsCategory: null,
+    errorsEntries: null,
     register: false,
     login: false,
     userLogged: null,
@@ -25,6 +26,10 @@ function errorsRegisterAction( payload ) {
 
 function errorsLoginAction( payload ) {
     return { type: 'errorsLogin', payload }
+}
+
+function errorsEntriesAction( payload ) {
+    return { type: 'errorsEntries', payload }
 }
 
 function userLoggedAction( payload ) {
@@ -58,6 +63,7 @@ function clearState() {
         errorsRegister: null,
         errorsLogin: null,
         errorsCategory: null,
+        errorsEntries: null,
         register: false,
         categories: [],
         lastEntries: []
@@ -94,12 +100,16 @@ function dispatch( action ) {
         case 'getLastEntries':
             return STATE = { ...STATE, lastEntries: action.payload }
         
+        case 'errorsEntries': 
+            return STATE = { ...STATE, errorsEntries: action.payload }
+
         default:
             return STATE
     }
 }
 
 module.exports = {
+    errorsEntriesAction,
     dispatch,
     getState,
     registerAction,

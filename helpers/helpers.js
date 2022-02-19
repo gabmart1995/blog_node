@@ -54,6 +54,7 @@ function loginUser( form ) {
                 console.error( error )
                 
                 reject( new Error('Problemas al autenticar usuario') )
+
                 return;
             }
 
@@ -64,8 +65,13 @@ function loginUser( form ) {
                 const [ userLogged ] = results;
 
                 if ( bcrypt.compareSync( form.password,  userLogged.password ) ) {
+                    
                     // console.log('usuario logueado');   
+                
+                    delete userLogged.password
+
                     resolve( userLogged );
+                    
                     return;
                 }
             }
@@ -131,10 +137,29 @@ function formatEntries( result ) {
     }
 }
 
+function createEntries( form ) {
+    return new Promise(( resolve, reject ) => {
+        executeQuery( '', form, ( error ) => {
+            
+            if ( error ) {
+                
+                console.error( error )
+
+                reject( new Error('Ocurrio un problema con el registro de la entrada') )
+            
+                return
+            }
+
+            resolve()
+        })
+    })
+}
+
 module.exports = {
     insertUser,
     loginUser,
     getCategories,
     getLastEntries,
-    insertCategory
+    insertCategory,
+    createEntries
 }

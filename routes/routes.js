@@ -1,11 +1,13 @@
 const express = require('express')
 const router = express.Router()
-const { insertUser, loginUser, getCategories, getLastEntries, insertCategory } = require('../helpers/helpers')
+const { insertUser, loginUser, getCategories, getLastEntries, insertCategory, createEntries } = require('../helpers/helpers')
 const state = require('../state/state')
 
 const regex = Object.freeze({
     string: (/^[A-Za-z\s]{1,25}$/),
-    emailString: (/^[a-z0-9]+@[a-z]{4,}\.[a-z]{3,}$/) 
+    descriptionString: (/^[A-Za-z0-9\s]{1,255}$/),
+    emailString: (/^[a-z0-9]+@[a-z]{4,}\.[a-z]{3,}$/),
+    onlyNumbers: (/^[0-9]+$/) 
 })
 
 // index
@@ -28,7 +30,7 @@ router.get('/', async ( request, response ) => {
         
     } finally {
         
-        // console.log( state.getState() )
+        console.log( state.getState() )
         response.render('index', state.getState() )
 
         // limpia el estado despues de renderizar la vista
@@ -170,21 +172,33 @@ router.post('/login', async ( request, response ) => {
 })
 
 // category
-router.get('/create-category', ( request, response ) => {
-    
-    const STATE = state.getState()
+router.get('/create-category', async ( request, response ) => {
 
+    const { login } = state.getState()
+    
     // verificar si el usuario esta logueado
-    if ( !STATE.login ) {
+    if ( !login ) {
         
         response.redirect('/')
         
         return
     }
-    
-    response.render('create-category', STATE )
 
-    state.clearState()
+    try {
+        
+        const categories = await getCategories()   
+        state.dispatch( state.getCategoriesAction( categories ) )
+    
+    } catch (error) {
+        
+        console.error( error )
+        state.dispatch( state.getCategoriesAction( null ) )
+
+    } finally {
+        
+        response.render('create-category', state.getState() )
+        state.clearState()
+    }
 })
 
 
@@ -233,6 +247,97 @@ router.post('/save-category', async ( request, response ) => {
             )
 
             response.redirect('/create-category')
+        }
+    }
+})
+
+router.get('/create-entries', async ( request, response ) => {
+
+    const { login } = state.getState()
+
+    if ( !login ) {
+        response.redirect('/')
+
+        return
+    }
+
+    try {
+
+        const categories = await getCategories()
+        state.dispatch( state.getCategoriesAction( categories ) )
+
+    } catch ( error ) {
+
+        console.error( error )
+        state.dispatch( state.getCategoriesAction( null ) )
+
+    } finally {
+
+        response.render('create-entries', state.getState())
+
+        // console.log( state.getState() )
+
+        state.clearState()
+    }
+})
+
+router.post('/save-entries', async ( request, response ) => {
+
+    const form = request.body
+    const errorsEntries = new Map()
+
+    if ( !form.titulo || !regex.descriptionString.test( form.titulo ) ) {
+        errorsEntries.set('titulo', 'El titulo de la entrada no es valido')
+    }
+
+    if ( !form.descripcion || !regex.descriptionString.test( form.descripcion ) ) {
+        errorsEntries.set('descripcion', 'La descripcion no es valida')
+    }
+
+    if ( !form.categoria || !regex.onlyNumbers.test( form.categoria ) ) {
+        errorsEntries.set('categoria', 'debe seleccionar al menos una categoria')
+    }
+
+    if ( errorsEntries.size > 0 ) {
+
+        console.log( errorsEntries )
+
+        state.dispatch( state.registerAction( false ) )
+        state.dispatch( 
+            state.errorsEntriesAction({
+                titulo: errorsEntries.get('titulo'),
+                descripcion: errorsEntries.get('descripcion'),
+                categoria: errorsEntries.get('categoria')
+            }) 
+        )
+
+        response.redirect('/create-entries')
+
+        return
+
+    } else {
+        
+        try {
+            
+            await createEntries()
+
+            state.dispatch( state.registerAction( true ) )
+
+            response.redirect('/')
+            
+        } catch ( error ) {
+            
+            state.dispatch( state.registerAction( false ) )
+            state.dispatch( 
+                state.errorsEntriesAction({
+                    titulo: errorsEntries.get('titulo'),
+                    descripcion: errorsEntries.get('descripcion'),
+                    categoria: errorsEntries.get('categoria'),
+                    general: error.message
+                }) 
+            )
+
+            response.redirect('/create-entries')
         }
     }
 })
