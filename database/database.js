@@ -3,9 +3,12 @@ const mysql = require('mysql')
 const SQL = Object.freeze({
     login: 'SELECT * FROM usuarios WHERE email = :email',
     register: 'INSERT INTO usuarios VALUES ( null, :name, :surname, :email, :password, CURDATE() );',
+    validateEmail: 'SELECT id, email FROM usuarios WHERE email = :email',
+    updateUser: 'UPDATE usuarios SET nombre = :name, apellidos = :surname, email = :email, password = :password WHERE id = :id;',
     getCategories: 'SELECT * FROM categorias ORDER BY id ASC;',
     getLastEntries: 'SELECT e.*, c.nombre AS categoria FROM entradas e INNER JOIN categorias c ON e.categoria_id = c.id ORDER BY e.id DESC LIMIT 4;',
-    insertCategory: 'INSERT INTO categorias VALUES( null, :nombre );'
+    insertCategory: 'INSERT INTO categorias VALUES( null, :nombre );',
+    insertEntries: 'INSERT INTO entradas VALUES( NULL, :usuario_id, :categoria_id, :titulo, :descripcion, CURDATE() );',
 })
 
 const connection = mysql.createConnection({
@@ -34,6 +37,7 @@ connection.config.queryFormat = function ( query, values ) {
 }
 
 function connectDatabase() {
+    
     return new Promise(( resolve, reject ) => {
         
         connection.connect( error => {
@@ -54,6 +58,7 @@ function executeQuery( query, data, callback ) {
 }
 
 function closeConnection() {
+    
     return new Promise((resolve, reject) => {
         
         connection.end( error => {

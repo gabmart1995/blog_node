@@ -4,6 +4,7 @@ let STATE = {
     errorsLogin: null,
     errorsCategory: null,
     errorsEntries: null,
+    errorsProfile: null,
     register: false,
     login: false,
     userLogged: null,
@@ -36,6 +37,10 @@ function userLoggedAction( payload ) {
     return { type: 'userLogged', payload }
 }
 
+function errorsProfileAction( payload ) {
+    return { type: 'errorsProfile', payload }
+}
+
 function logoutAction() {
     return { type: 'logout' }
 }
@@ -64,6 +69,7 @@ function clearState() {
         errorsLogin: null,
         errorsCategory: null,
         errorsEntries: null,
+        errorsProfile: null,
         register: false,
         categories: [],
         lastEntries: []
@@ -103,6 +109,9 @@ function dispatch( action ) {
         case 'errorsEntries': 
             return STATE = { ...STATE, errorsEntries: action.payload }
 
+        case 'errorsProfile':
+            return STATE = { ...STATE, errorsProfile: action.payload }
+
         default:
             return STATE
     }
@@ -121,5 +130,6 @@ module.exports = {
     logoutAction,
     getCategoriesAction,
     getLastEntriesAction,
-    errorsCategoryAction
+    errorsCategoryAction,
+    errorsProfileAction
 }

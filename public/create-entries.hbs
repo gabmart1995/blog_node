@@ -7,6 +7,14 @@
         Anade una nuevas entradas al blog, para que los usuarios puedan 
         leerlas y disfutar del contenido
     </p><br />
+
+    {{#if errorsEntries }}
+        {{#if errorsEntries.general }}
+            <div class="alerta alerta-error">{{ errorsEntries.general }}</div>
+        {{/if}}
+    {{/if}}
+
+
     <form action="/save-entries" method="POST">
         
         <label for="titulo">Titulo:</label>
@@ -18,7 +26,7 @@
         {{/if}}
 
         <label for="descripcion">Descripcion:</label>
-        <input type="text" name="descripcion" id="descipcion">
+        <textarea name="descripcion" id="descipcion"></textarea>
         {{#if errorsEntries }}
             {{#if errorsEntries.descripcion }}
                 <div class="alerta alerta-error">{{ errorsEntries.descripcion }}</div>
@@ -30,7 +38,7 @@
 
             <option value="">Seleccione</option>
             {{#if categories }}
-                {{#each categories as |category| }}
+                {{#each categories as | category | }}
                     <option value="{{ category.id }}">{{ category.nombre }}</option>
                 {{/each}}
             {{/if }}

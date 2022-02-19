@@ -1,6 +1,14 @@
 const express = require('express')
 const router = express.Router()
-const { insertUser, loginUser, getCategories, getLastEntries, insertCategory, createEntries } = require('../helpers/helpers')
+const { 
+    insertUser, 
+    loginUser, 
+    getCategories, 
+    getLastEntries, 
+    insertCategory, 
+    createEntries, 
+    updateUser
+} = require('../helpers/helpers')
 const state = require('../state/state')
 
 const regex = Object.freeze({
@@ -30,7 +38,7 @@ router.get('/', async ( request, response ) => {
         
     } finally {
         
-        console.log( state.getState() )
+        // console.log( state.getState() )
         response.render('index', state.getState() )
 
         // limpia el estado despues de renderizar la vista
@@ -118,6 +126,108 @@ router.post('/register', async ( request, response ) => {
 
     // redirecciona al index
     response.redirect('/');
+})
+
+// profile
+router.get('/profile', async ( request, response ) => {
+
+    const { login } = state.getState()
+
+    if ( !login ) {
+        response.redirect('/')
+
+        return
+    }
+
+    try {
+        const categories = await getCategories()  
+        state.dispatch( state.getCategoriesAction( categories ) )      
+    
+    } catch ( error ) {
+
+        state.dispatch( state.getCategoriesAction([]) )
+        console.log( error )
+    
+    } finally {
+        response.render('profile', state.getState())
+        state.clearState()
+    }
+})
+
+// update-user
+router.post('/update-profile', async ( request, response ) => {
+
+    const form = request.body
+    const errorsProfile = new Map()
+    const userLogged = state.getState().userLogged
+
+    if ( !form.name || !regex.string.test( form.name.trim() ) ) {
+        errorsProfile.set('name', 'El nombre no es valido')
+    }
+
+    if ( !form.surname || !regex.string.test( form.surname.trim() ) ) {
+        errorsProfile.set('surname', 'El apellido no es valido')
+    }
+
+    if ( !form.email || !regex.emailString.test( form.email.trim() ) ) {
+        errorsProfile.set('email', 'El email no es valido')
+    }
+
+    if ( !form.password || form.password.trim().length === 0 ) {
+        errorsProfile.set('password', 'password esta vacio')
+    }
+
+    if ( errorsProfile.size > 0 ) {
+        
+        // console.log( errorsProfile )
+
+        state.dispatch( state.registerAction( false ) )
+        state.dispatch( 
+            state.errorsProfileAction({
+                name: errorsProfile.get('name'),
+                surname: errorsProfile.get('surname'),
+                email: errorsProfile.get('email'),
+                password: errorsProfile.get('password')
+            })        
+        )
+    
+    } else {
+        
+        try {
+            
+            const user = await updateUser({ ...form, id: userLogged.id })
+            
+            state.dispatch( state.registerAction( true ) )
+            
+            // cambia los datos del usuario en el estado
+            state.dispatch( state.userLoggedAction({
+                    nombre: user.name,
+                    apellidos: user.surname,
+                    id: user.id,
+                    email: user.email,
+                    fecha: userLogged.fecha
+                }) 
+            )
+
+            // console.log( state.getState() )
+        
+        } catch ( error ) {
+
+            state.dispatch( state.registerAction( false ) )
+            state.dispatch( 
+                state.errorsProfileAction({
+                    name: errorsProfile.get('name'),
+                    surname: errorsProfile.get('surname'),
+                    email: errorsProfile.get('email'),
+                    password: errorsProfile.get('password'),
+                    general: error.message
+                }) 
+            )
+
+        }
+    }
+
+    response.redirect('/profile')
 })
 
 // login
@@ -273,9 +383,9 @@ router.get('/create-entries', async ( request, response ) => {
 
     } finally {
 
-        response.render('create-entries', state.getState())
-
         // console.log( state.getState() )
+        
+        response.render('create-entries', state.getState())
 
         state.clearState()
     }
@@ -300,7 +410,7 @@ router.post('/save-entries', async ( request, response ) => {
 
     if ( errorsEntries.size > 0 ) {
 
-        console.log( errorsEntries )
+        // console.log( errorsEntries )
 
         state.dispatch( state.registerAction( false ) )
         state.dispatch( 
@@ -319,14 +429,21 @@ router.post('/save-entries', async ( request, response ) => {
         
         try {
             
-            await createEntries()
+            await createEntries({ 
+                titulo: form.titulo.trim(),
+                descripcion: form.descripcion.trim(),
+                usuario_id: state.getState().userLogged.id,
+                categoria_id: Number( form.categoria )
+            })
 
             state.dispatch( state.registerAction( true ) )
 
             response.redirect('/')
             
         } catch ( error ) {
-            
+
+            // console.log( error.message )
+
             state.dispatch( state.registerAction( false ) )
             state.dispatch( 
                 state.errorsEntriesAction({

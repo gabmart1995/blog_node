@@ -1,0 +1,54 @@
+<!-- header -->
+{{> header }}    
+{{> sidebar }}
+<div id="principal">
+    <h1>Mis datos</h1>
+    
+    {{#if register }}
+        <div class="alerta alerta-exito">Actualizacion de usuario completada</div>
+    {{/if}}
+
+    {{#if errorsProfile }}
+        {{#if errorsProfile.general }}
+            <div class="alerta alerta-error">{{ errorsProfile.general }}</div>
+        {{/if}}
+    {{/if}}
+
+    <form action="/update-profile" method="POST">
+
+        <label for="name">Nombre</label>
+        <input type="text" name="name" id="name" />
+        {{#if errorsProfile }}
+            {{#if errorsProfile.name }}
+                <div class="alerta alerta-error">{{ errorsProfile.name }}</div>
+            {{/if}}
+        {{/if}}
+
+        <label for="surname">Apellidos</label>
+        <input type="text" name="surname" id="surname" />
+        {{#if errorsProfile }}
+            {{#if errorsProfile.surname }}
+                <div class="alerta alerta-error">{{ errorsProfile.surname }}</div>
+            {{/if}}
+        {{/if}}
+
+        <label for="email-register">Email</label>
+        <input type="email" name="email" id="email-register" />
+        {{#if errorsProfile }}
+            {{#if errorsProfile.email }}
+                <div class="alerta alerta-error">{{ errorsProfile.email }}</div>
+            {{/if}}
+        {{/if}}
+
+        <label for="password-register">Password</label>
+        <input type="password" name="password" id="password-register" />
+        {{#if errorsProfile }}
+            {{#if errorsProfile.password }}
+                <div class="alerta alerta-error">{{ errorsProfile.password }}</div>
+            {{/if}}
+        {{/if}}
+
+        <input type="submit" value="Actualizar" />
+    </form>
+</div>
+{{> footer }}

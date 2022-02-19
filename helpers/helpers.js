@@ -25,12 +25,90 @@ function insertUser( form ) {
     })    
 }
 
+function updateUser( form ) {
+
+    return new Promise(( resolve, reject ) => {
+
+        // comprueba si el email existe
+        executeQuery( SQL.validateEmail, { email: form.email }, ( error, results ) => {
+
+            if ( error ) {
+                
+                console.error( error )
+                
+                reject( new Error('Ocurrio un problema con la busqueda del usuario') )
+                
+                return
+            }
+
+            // console.log( results )
+
+            if ( results.length > 0 ) {
+
+                for ( const result of results ) {
+                    
+                    // si el id de la base de datos coincide con la usuario logueado
+                    // entonces actualiza el usuario
+                    if ( result.id === form.id ) {
+                        
+                        let password_cifer = bcrypt.hashSync( form.password, 4 )
+                        form.password = password_cifer
+                        
+                        executeQuery( SQL.updateUser, form, ( error ) => {
+                            
+                            if ( error ) {
+                                
+                                console.error( error )
+                                
+                                reject( new Error('Ocurrio un problema con la actualizacion del usuario') )
+                                
+                                return
+                            }
+                            
+                            delete form.password
+                            
+                            resolve( form )
+                        })
+                        
+                    } else {                    
+                        
+                        // en caso de colocar un email de otro usuario         
+                        reject( new Error('El usuario ya existe y esta registrado en el blog') )
+                    }
+                }    
+            
+            } else {
+
+                let password_cifer = bcrypt.hashSync( form.password, 4 )
+                form.password = password_cifer
+        
+                executeQuery( SQL.updateUser, form, ( error ) => {
+        
+                    if ( error ) {
+                        
+                        console.error( error )
+                        
+                        reject( new Error('Ocurrio un problema con la actualizacion del usuario') )
+                        
+                        return
+                    }
+        
+                    delete form.password
+        
+                    resolve( form )
+                })
+            }
+        })
+    })
+}
+
 function insertCategory( form ) {
     return new Promise(( resolve, reject ) => {
         
         executeQuery( SQL.insertCategory, form, ( error ) => {
 
             if ( error ) {
+                
                 console.error( error )
                 
                 reject( new Error('No se pudo registrar la categoria') )
@@ -89,8 +167,11 @@ function getCategories() {
         executeQuery( SQL.getCategories, null, ( error, results ) => {
             
             if ( error ) {
+                
                 console.error( error )
+                
                 reject( error )
+                
                 return
             }
 
@@ -107,8 +188,11 @@ function getLastEntries() {
         executeQuery( SQL.getLastEntries, null, ( error, results ) => {
             
             if ( error ) {
+                
                 console.error( error )
+                
                 reject( error )
+                
                 return
             }
 
@@ -133,13 +217,15 @@ function formatEntries( result ) {
     return {
         ...result,
         fecha: (`${ date.getDate() }-${ date.getMonth() > 9 ? date.getMonth() + 1 : '0' + ( date.getMonth() + 1 ) }-${ date.getFullYear() }`),
-        descripcion: result.descripcion.slice( 0, 100 ) + ' ...'
+        descripcion: result.descripcion.length > 100 ? 
+            ( result.descripcion.slice( 0, 100 ) + ' ...' ) : result.descripcion
     }
 }
 
 function createEntries( form ) {
+    
     return new Promise(( resolve, reject ) => {
-        executeQuery( '', form, ( error ) => {
+        executeQuery( SQL.insertEntries, form, ( error ) => {
             
             if ( error ) {
                 
@@ -161,5 +247,6 @@ module.exports = {
     getCategories,
     getLastEntries,
     insertCategory,
-    createEntries
+    createEntries,
+    updateUser
 }
