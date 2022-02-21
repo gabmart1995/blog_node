@@ -291,6 +291,7 @@ function createEntries( form ) {
 function getAllEntries() {
 
     return new Promise(( resolve, reject ) => {
+        
         executeQuery( SQL.getEntries, null, ( error, results ) => {
             
             if ( error ) {
@@ -308,10 +309,46 @@ function getAllEntries() {
 
                 return
             }
+            
             // console.log( results )
+            
             results = results.map( formatEntries )
  
             resolve( results )
+        })
+    })
+}
+
+function getEntry( idEntry ) {
+
+    return new Promise(( resolve, reject ) => {
+        
+        executeQuery( SQL.getEntry, { id: idEntry }, ( error, results ) => {
+
+            if ( error ) {
+                
+                console.error( error )
+                
+                reject( new Error('Error al obtener la entrada') )
+                
+                return
+            }
+
+            if ( results.length === 0 ) {
+                
+                resolve( null )
+                
+                return
+            }
+
+            let [ result ] = results
+            const date = new Date( result.fecha )
+
+            result.fecha = (`${ date.getDate() }-${ date.getMonth() > 9 ? date.getMonth() + 1 : '0' + ( date.getMonth() + 1 ) }-${ date.getFullYear() }`) 
+            
+            // console.log( results )
+        
+            resolve( result )
         })
     })
 }
@@ -326,5 +363,6 @@ module.exports = {
     updateUser,
     getAllEntries,
     getCategory,
-    getEntriesByCategory
+    getEntriesByCategory,
+    getEntry
 }

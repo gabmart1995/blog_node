@@ -10,14 +10,15 @@ const {
     updateUser,
     getAllEntries,
     getEntriesByCategory,
-    getCategory
+    getCategory,
+    getEntry
 } = require('../helpers/helpers')
 
 const state = require('../state/state')
 
 const regex = Object.freeze({
     string: (/^[A-Za-z\s]{1,25}$/),
-    descriptionString: (/^[A-Za-z0-9\s]{1,255}$/),
+    descriptionString: (/^[A-Za-z0-9\.\,\s]{1,1000}$/),
     emailString: (/^[a-z0-9]+@[a-z]{4,}\.[a-z]{3,}$/),
     onlyNumbers: (/^[0-9]+$/) 
 })
@@ -404,6 +405,7 @@ router.post('/save-entries', async ( request, response ) => {
         errorsEntries.set('titulo', 'El titulo de la entrada no es valido')
     }
 
+
     if ( !form.descripcion || !regex.descriptionString.test( form.descripcion ) ) {
         errorsEntries.set('descripcion', 'La descripcion no es valida')
     }
@@ -469,6 +471,8 @@ router.get('/entries', async ( request, response ) => {
         const entries = await getAllEntries()
         const categories = await getCategories()
 
+        // console.log( entries )
+
         state.dispatch( state.getCategoriesAction( categories ) )
         state.dispatch( state.getEntriesAction( entries ) )
 
@@ -487,6 +491,11 @@ router.get('/entries', async ( request, response ) => {
 router.get('/category', async ( request, response ) => {
     
     const { id } = request.query 
+
+    if ( !id || id.length === 0 ) {
+        response.redirect('/')
+        return
+    }
 
     try {
         
@@ -524,6 +533,39 @@ router.get('/category', async ( request, response ) => {
         response.render('category', state.getState())
         state.clearState()
     } 
+})
+
+router.get('/entry', async ( request, response ) => {
+
+    const { id } = request.query
+
+    if ( !id || id.length === 0 ) {
+        response.redirect('/')
+        return
+    }
+
+    try {
+
+        const categories = await getCategories()
+        const entry = await getEntry( id )
+        
+        state.dispatch( state.getCategoriesAction( categories ) )
+        state.dispatch( state.setEntryAction( entry ) )
+        
+        // console.log( entry )
+
+    } catch ( error ) {
+
+        state.dispatch( state.getCategoriesAction([]) )
+        state.dispatch( state.setEntryAction( null ) )
+
+        console.log( error )
+    
+    } finally {
+
+        response.render('entry', state.getState())
+        state.clearState()
+    }
 })
 
 // route 404

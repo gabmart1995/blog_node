@@ -9,7 +9,7 @@
         {{#if lastEntries}}
             {{#each lastEntries as | entry |}}
                 <article class="entrada">
-                    <a href="">
+                    <a href="/entry?id={{ entry.id }}">
                         <h2>{{ entry.titulo }}</h2>
                         <span class="fecha">{{ entry.categoria }} | {{ entry.fecha }}</span>
                         <p>{{ entry.descripcion }}</p>

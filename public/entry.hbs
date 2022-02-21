@@ -1,0 +1,13 @@
+<!-- header -->
+{{> header }}    
+{{> sidebar }}
+    <!-- Caja principal -->
+    <div id="principal">
+        <h1>{{ entry.titulo }}</h1>
+        <a href="/category?id={{ entry.categoria_id }}">
+            <h2>{{ entry.categoria }}</h2>
+        </a>
+        <h4 class="fecha">{{ entry.fecha }}</h4>
+        <p class="justify">{{ entry.descripcion }}</p>
+    </div>
+{{> footer }}
