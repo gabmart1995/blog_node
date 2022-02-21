@@ -7,7 +7,12 @@
         <a href="/category?id={{ entry.categoria_id }}">
             <h2>{{ entry.categoria }}</h2>
         </a>
-        <h4 class="fecha">{{ entry.fecha }}</h4>
+        <h4 class="fecha">{{ entry.fecha }} | {{ entry.usuario }}</h4>
         <p class="justify">{{ entry.descripcion }}</p>
+
+        {{#if isAuthor }}
+            <a href="" class="boton boton-verde">Editar entrada</a>
+            <a href="" class="boton boton">Eliminar entrada</a>
+        {{/if }}
     </div>
 {{> footer }}

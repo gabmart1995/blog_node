@@ -366,6 +366,55 @@ router.post('/save-category', async ( request, response ) => {
     }
 })
 
+// category
+router.get('/category', async ( request, response ) => {
+    
+    const { id } = request.query 
+
+    if ( !id || id.length === 0 ) {
+        response.redirect('/')
+        return
+    }
+
+    try {
+        
+        const categories = await getCategories()
+        const category = await getCategory( id )
+
+        // console.log( category )
+
+        // si no halla la categoria redirecciona al index
+        if ( !category ) {
+            response.redirect('/')
+            return
+        }
+        
+        // entradas por categoria
+        const entries = await getEntriesByCategory( id )
+        
+        // console.log({ category, entries })
+        
+        state.dispatch( state.getCategoriesAction( categories ) )
+        state.dispatch( state.setCategoryAction( category ) )
+        state.dispatch( state.getEntriesByCategoryAction( entries ) )
+
+        response.render('category', state.getState())
+        state.clearState()
+
+    } catch ( error ) {
+
+        console.error( error )
+
+        state.dispatch( state.getCategoriesAction([]) )
+        state.dispatch( state.setCategoryAction( null ) )
+        state.dispatch( state.getEntriesByCategoryAction([]) )
+        
+        response.render('category', state.getState())
+        state.clearState()
+    } 
+})
+
+// entries
 router.get('/create-entries', async ( request, response ) => {
 
     const { login } = state.getState()
@@ -465,6 +514,7 @@ router.post('/save-entries', async ( request, response ) => {
     }
 })
 
+// get entry
 router.get('/entries', async ( request, response ) => {
     
     try {
@@ -487,56 +537,10 @@ router.get('/entries', async ( request, response ) => {
     }
 })
 
-// category
-router.get('/category', async ( request, response ) => {
-    
-    const { id } = request.query 
-
-    if ( !id || id.length === 0 ) {
-        response.redirect('/')
-        return
-    }
-
-    try {
-        
-        const categories = await getCategories()
-        const category = await getCategory( id )
-
-        // console.log( category )
-
-        // si no halla la categoria redirecciona al index
-        if ( !category ) {
-            response.redirect('/')
-            return
-        }
-        
-        // entradas por categoria
-        const entries = await getEntriesByCategory( id )
-        
-        // console.log({ category, entries })
-        
-        state.dispatch( state.getCategoriesAction( categories ) )
-        state.dispatch( state.setCategoryAction( category ) )
-        state.dispatch( state.getEntriesByCategoryAction( entries ) )
-
-        response.render('category', state.getState())
-        state.clearState()
-
-    } catch ( error ) {
-
-        console.error( error )
-
-        state.dispatch( state.getCategoriesAction([]) )
-        state.dispatch( state.setCategoryAction( null ) )
-        state.dispatch( state.getEntriesByCategoryAction([]) )
-        
-        response.render('category', state.getState())
-        state.clearState()
-    } 
-})
 
 router.get('/entry', async ( request, response ) => {
 
+    let isAuthor = false  // flag autor del post
     const { id } = request.query
 
     if ( !id || id.length === 0 ) {
@@ -549,6 +553,10 @@ router.get('/entry', async ( request, response ) => {
         const categories = await getCategories()
         const entry = await getEntry( id )
         
+        if ( state.getState().login ) {
+            isAuthor = entry.usuario_id === state.getState().userLogged.id;
+        }
+
         state.dispatch( state.getCategoriesAction( categories ) )
         state.dispatch( state.setEntryAction( entry ) )
         
@@ -563,7 +571,7 @@ router.get('/entry', async ( request, response ) => {
     
     } finally {
 
-        response.render('entry', state.getState())
+        response.render('entry', { ...state.getState(), isAuthor })
         state.clearState()
     }
 })
