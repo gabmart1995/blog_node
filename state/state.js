@@ -11,11 +11,16 @@ let STATE = {
     categories: [],
     lastEntries: [],
     entries: [],
+    category: null,
     year: new Date().getFullYear()
 }
 
 function registerAction( payload ) {
     return { type: 'register', payload }
+}
+
+function getEntriesByCategoryAction( payload ) {
+    return { type: 'getEntriesByCategory', payload }
 }
 
 function loginAction( payload ) {
@@ -66,6 +71,10 @@ function getState() {
     return STATE;
 }
 
+function setCategoryAction( payload ) {
+    return { type: 'setCategoryAction', payload }
+}
+
 
 function clearState() {
     STATE = {
@@ -77,6 +86,7 @@ function clearState() {
         errorsProfile: null,
         register: false,
         categories: [],
+        category: null,
         lastEntries: [],
         entries: []
     }
@@ -120,6 +130,12 @@ function dispatch( action ) {
 
         case 'errorsProfile':
             return STATE = { ...STATE, errorsProfile: action.payload }
+        
+        case 'getEntriesByCategory':
+            return STATE = { ...STATE, entries: action.payload }
+
+        case 'setCategoryAction':
+            return STATE = { ...STATE, category: action.payload }
 
         default:
             return STATE
@@ -141,5 +157,7 @@ module.exports = {
     getLastEntriesAction,
     getEntriesAction,
     errorsCategoryAction,
-    errorsProfileAction
+    errorsProfileAction,
+    getEntriesByCategoryAction,
+    setCategoryAction
 }

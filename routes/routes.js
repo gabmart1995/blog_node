@@ -8,7 +8,9 @@ const {
     insertCategory, 
     createEntries, 
     updateUser,
-    getAllEntries
+    getAllEntries,
+    getEntriesByCategory,
+    getCategory
 } = require('../helpers/helpers')
 
 const state = require('../state/state')
@@ -481,7 +483,48 @@ router.get('/entries', async ( request, response ) => {
     }
 })
 
+// category
+router.get('/category', async ( request, response ) => {
+    
+    const { id } = request.query 
 
+    try {
+        
+        const categories = await getCategories()
+        const category = await getCategory( id )
+
+        // console.log( category )
+
+        // si no halla la categoria redirecciona al index
+        if ( !category ) {
+            response.redirect('/')
+            return
+        }
+        
+        // entradas por categoria
+        const entries = await getEntriesByCategory( id )
+        
+        // console.log({ category, entries })
+        
+        state.dispatch( state.getCategoriesAction( categories ) )
+        state.dispatch( state.setCategoryAction( category ) )
+        state.dispatch( state.getEntriesByCategoryAction( entries ) )
+
+        response.render('category', state.getState())
+        state.clearState()
+
+    } catch ( error ) {
+
+        console.error( error )
+
+        state.dispatch( state.getCategoriesAction([]) )
+        state.dispatch( state.setCategoryAction( null ) )
+        state.dispatch( state.getEntriesByCategoryAction([]) )
+        
+        response.render('category', state.getState())
+        state.clearState()
+    } 
+})
 
 // route 404
 router.all('*', ( request, response ) => {

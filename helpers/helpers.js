@@ -182,6 +182,53 @@ function getCategories() {
     })
 }
 
+function getCategory( idCategory ) {
+
+    return new Promise(( resolve, reject ) => {
+
+        executeQuery(  SQL.getCategory, { id: idCategory }, ( error, results ) => {
+
+            if ( error ) {
+                
+                console.error( error )
+                
+                reject( new Error('Error al obtener las categorias') )
+                
+                return
+            }
+
+            // console.log( results )
+            
+            if ( results.length === 0 ) {
+                
+                resolve( null )
+                
+                return
+            }
+
+            resolve( results[0] )
+        })
+    })
+}
+
+function getEntriesByCategory( idCategory ) {
+
+    return new Promise(( resolve, reject ) => {
+
+        executeQuery(  SQL.getEntriesByCategory, { categoria_id: idCategory }, ( error, results ) => {
+
+            if ( error ) {
+                console.error( error )
+                reject( new Error('Error al obtener las entradas') )
+            }
+
+            // console.log( results )
+
+            resolve( results.map( formatEntries ) )
+        })
+    })
+}
+
 function getLastEntries() {
 
     return new Promise(( resolve, reject ) => {
@@ -277,5 +324,7 @@ module.exports = {
     insertCategory,
     createEntries,
     updateUser,
-    getAllEntries
+    getAllEntries,
+    getCategory,
+    getEntriesByCategory
 }
