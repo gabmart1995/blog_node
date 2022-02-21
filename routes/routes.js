@@ -7,8 +7,10 @@ const {
     getLastEntries, 
     insertCategory, 
     createEntries, 
-    updateUser
+    updateUser,
+    getAllEntries
 } = require('../helpers/helpers')
+
 const state = require('../state/state')
 
 const regex = Object.freeze({
@@ -457,6 +459,34 @@ router.post('/save-entries', async ( request, response ) => {
             response.redirect('/create-entries')
         }
     }
+})
+
+router.get('/entries', async ( request, response ) => {
+    
+    try {
+        const entries = await getAllEntries()
+        const categories = await getCategories()
+
+        state.dispatch( state.getCategoriesAction( categories ) )
+        state.dispatch( state.getEntriesAction( entries ) )
+
+    } catch (error) {
+
+        state.dispatch( state.getCategoriesAction([]) )
+        state.dispatch( state.getEntriesAction([]) )
+    
+    } finally {
+        response.render('entries', state.getState())
+        state.clearState()
+    }
+})
+
+
+
+// route 404
+router.all('*', ( request, response ) => {
+    response.status(404)
+    response.send('not found')
 })
 
 module.exports = router

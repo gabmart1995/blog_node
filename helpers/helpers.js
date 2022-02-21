@@ -241,6 +241,34 @@ function createEntries( form ) {
     })
 }
 
+function getAllEntries() {
+
+    return new Promise(( resolve, reject ) => {
+        executeQuery( SQL.getEntries, null, ( error, results ) => {
+            
+            if ( error ) {
+                
+                console.error( error )
+                
+                reject( error )
+                
+                return
+            }
+
+            if ( results.length === 0 ) {
+
+                resolve( null )
+
+                return
+            }
+            // console.log( results )
+            results = results.map( formatEntries )
+ 
+            resolve( results )
+        })
+    })
+}
+
 module.exports = {
     insertUser,
     loginUser,
@@ -248,5 +276,6 @@ module.exports = {
     getLastEntries,
     insertCategory,
     createEntries,
-    updateUser
+    updateUser,
+    getAllEntries
 }

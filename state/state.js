@@ -10,6 +10,7 @@ let STATE = {
     userLogged: null,
     categories: [],
     lastEntries: [],
+    entries: [],
     year: new Date().getFullYear()
 }
 
@@ -53,6 +54,10 @@ function getLastEntriesAction( payload ) {
     return { type: 'getLastEntries', payload }
 }
 
+function getEntriesAction( payload ) {
+    return { type: 'getEntries', payload }
+}
+
 function errorsCategoryAction( payload ) {
     return { type: 'errorsCategory', payload }
 }
@@ -72,7 +77,8 @@ function clearState() {
         errorsProfile: null,
         register: false,
         categories: [],
-        lastEntries: []
+        lastEntries: [],
+        entries: []
     }
 }
 
@@ -106,6 +112,9 @@ function dispatch( action ) {
         case 'getLastEntries':
             return STATE = { ...STATE, lastEntries: action.payload }
         
+        case 'getEntries': 
+            return STATE = { ...STATE, entries: action.payload }
+        
         case 'errorsEntries': 
             return STATE = { ...STATE, errorsEntries: action.payload }
 
@@ -130,6 +139,7 @@ module.exports = {
     logoutAction,
     getCategoriesAction,
     getLastEntriesAction,
+    getEntriesAction,
     errorsCategoryAction,
     errorsProfileAction
 }

@@ -7,6 +7,7 @@ const SQL = Object.freeze({
     updateUser: 'UPDATE usuarios SET nombre = :name, apellidos = :surname, email = :email, password = :password WHERE id = :id;',
     getCategories: 'SELECT * FROM categorias ORDER BY id ASC;',
     getLastEntries: 'SELECT e.*, c.nombre AS categoria FROM entradas e INNER JOIN categorias c ON e.categoria_id = c.id ORDER BY e.id DESC LIMIT 4;',
+    getEntries: 'SELECT e.*, c.nombre AS categoria FROM entradas e INNER JOIN categorias c ON e.categoria_id = c.id ORDER BY e.id DESC;',
     insertCategory: 'INSERT INTO categorias VALUES( null, :nombre );',
     insertEntries: 'INSERT INTO entradas VALUES( NULL, :usuario_id, :categoria_id, :titulo, :descripcion, CURDATE() );',
 })
