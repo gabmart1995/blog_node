@@ -1,0 +1,53 @@
+<!-- header -->
+{{> header }}    
+{{> sidebar }}
+<div id="principal">
+
+    {{#if entry }}
+
+        <h1>Editar entrada</h1>
+        <p>
+            Edita tu entrada: <b>{{ entry.titulo }}</b>
+        </p><br />
+
+        {{#if errorsEntries }}
+            {{#if errorsEntries.general }}
+                <div class="alerta alerta-error">{{ errorsEntries.general }}</div>
+            {{/if}}
+        {{/if}}
+
+
+        <form action="/save-entries" method="POST">
+            
+            <label for="titulo">Titulo:</label>
+            <input type="text" value="{{ entry.titulo }}" name="titulo" id="titulo" >
+            {{#if errorsEntries }}
+                {{#if errorsEntries.titulo }}
+                    <div class="alerta alerta-error">{{ errorsEntries.titulo }}</div>
+                {{/if}}
+            {{/if}}
+
+            <label for="descripcion">Descripcion:</label>
+            <textarea name="descripcion" id="descipcion">{{ entry.descripcion }}</textarea>
+            {{#if errorsEntries }}
+                {{#if errorsEntries.descripcion }}
+                    <div class="alerta alerta-error">{{ errorsEntries.descripcion }}</div>
+                {{/if}}
+            {{/if}}
+
+            <label for="categoria">Categoria</label>
+            
+            {{#select-category}}{{/select-category}}
+
+            </select>
+            {{#if errorsEntries }}
+                {{#if errorsEntries.categoria }}
+                    <div class="alerta alerta-error">{{ errorsEntries.categoria }}</div>
+                {{/if}}
+            {{/if}}
+
+            <input type="submit" value="Guardar">
+        </form>
+    {{/if }}
+</div>
+{{> footer }}

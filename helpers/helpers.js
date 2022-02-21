@@ -353,6 +353,28 @@ function getEntry( idEntry ) {
     })
 }
 
+function deleteEntry( idEntry, idUser ) {
+    
+    // console.log({ idEntry, idUser });
+
+    return new Promise(( resolve, reject ) => {
+
+        executeQuery( SQL.deleteEntries, { id: idEntry, usuario_id: idUser }, ( error ) => {
+            
+            if ( error ) {
+
+                console.error( error )
+                
+                reject( new Error('Error al borrar la entrada') )
+                
+                return 
+            }
+
+            resolve()
+        })
+    })
+}
+
 module.exports = {
     insertUser,
     loginUser,
@@ -364,5 +386,6 @@ module.exports = {
     getAllEntries,
     getCategory,
     getEntriesByCategory,
-    getEntry
+    getEntry,
+    deleteEntry
 }

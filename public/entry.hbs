@@ -11,8 +11,8 @@
         <p class="justify">{{ entry.descripcion }}</p>
 
         {{#if isAuthor }}
-            <a href="" class="boton boton-verde">Editar entrada</a>
-            <a href="" class="boton boton">Eliminar entrada</a>
+            <a href="/edit-entry?id={{ entry.id }}" class="boton boton-verde">Editar entrada</a>
+            <a href="/delete-entry?id={{ entry.id }}" class="boton boton">Eliminar entrada</a>
         {{/if }}
     </div>
 {{> footer }}

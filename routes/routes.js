@@ -11,10 +11,12 @@ const {
     getAllEntries,
     getEntriesByCategory,
     getCategory,
-    getEntry
+    getEntry,
+    deleteEntry
 } = require('../helpers/helpers')
 
 const state = require('../state/state')
+const hbs = require('hbs')
 
 const regex = Object.freeze({
     string: (/^[A-Za-z\s]{1,25}$/),
@@ -371,7 +373,7 @@ router.get('/category', async ( request, response ) => {
     
     const { id } = request.query 
 
-    if ( !id || id.length === 0 ) {
+    if ( !regex.onlyNumbers.test( id ) ) {
         response.redirect('/')
         return
     }
@@ -379,9 +381,7 @@ router.get('/category', async ( request, response ) => {
     try {
         
         const categories = await getCategories()
-        const category = await getCategory( id )
-
-        // console.log( category )
+        const category = await getCategory( Number( id ) )
 
         // si no halla la categoria redirecciona al index
         if ( !category ) {
@@ -543,7 +543,7 @@ router.get('/entry', async ( request, response ) => {
     let isAuthor = false  // flag autor del post
     const { id } = request.query
 
-    if ( !id || id.length === 0 ) {
+    if ( !regex.onlyNumbers.test( id ) ) {
         response.redirect('/')
         return
     }
@@ -551,7 +551,7 @@ router.get('/entry', async ( request, response ) => {
     try {
 
         const categories = await getCategories()
-        const entry = await getEntry( id )
+        const entry = await getEntry( Number( id ) )
         
         if ( state.getState().login ) {
             isAuthor = entry.usuario_id === state.getState().userLogged.id;
@@ -572,6 +572,84 @@ router.get('/entry', async ( request, response ) => {
     } finally {
 
         response.render('entry', { ...state.getState(), isAuthor })
+        state.clearState()
+    }
+})
+
+router.get('/delete-entry', async ( request, response ) => {
+    
+    const { id } = request.query
+
+    if ( !regex.onlyNumbers.test( id ) || !state.getState().login ) {
+        
+        response.redirect('/')
+        
+        return 
+    }
+    
+    try {
+        
+        await deleteEntry( Number( id ), state.getState().userLogged.id )
+
+        state.dispatch( state.setDelete() )
+        
+
+    } catch ( error ) {
+
+        console.error( error )
+    
+    } finally {
+
+        response.redirect('/')
+        
+        state.clearState()
+    }
+})
+
+router.get('/edit-entry', async ( request, response ) => {
+
+    const { id } = request.query
+
+    if ( !state.getState().login || !regex.onlyNumbers.test( id ) ) {
+        response.redirect('/')
+        return
+    }
+
+    try {
+        
+        const categories = await getCategories()
+        const entry = await getEntry( Number( id ) )
+        
+        // helper component
+        hbs.registerHelper('select-category', () => {
+            return (`
+                <select name="categoria">
+                    <option value="">Seleccione</option>
+                    ${ categories.map( category => (`
+                            <option 
+                                value="${ category.id }" 
+                                ${ category.id === entry.categoria_id ? 'selected' : '' }>
+                                    ${ category.nombre }
+                            </option>
+                        `)).join('') 
+                    }
+                </select>
+            `)
+        })
+
+        state.dispatch( state.setEntryAction( entry ) )
+        state.dispatch( state.getCategoriesAction( categories ) )
+
+    } catch (error) {
+
+        console.error( error )
+
+        state.dispatch( state.setEntryAction( null ) )
+        state.dispatch( state.getCategoriesAction([]) )
+
+    } finally {
+
+        response.render('edit-entries', state.getState() )
         state.clearState()
     }
 })
