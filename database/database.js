@@ -13,8 +13,8 @@ const SQL = Object.freeze({
 
 const connection = mysql.createConnection({
     host: 'localhost',
-    user: 'root',
-    password: '',
+    user: 'test',
+    password: '123456',
     database: 'blog_master'
 })
 

@@ -5,6 +5,7 @@ const hbs = require('hbs')
 
 const router = require('./routes/routes')
 const { connectDatabase } = require('./database/database')
+const { logMiddleware } = require('./middlewares/log-middleware')
 
 const app = express()
 const port = 3000
@@ -19,6 +20,7 @@ app.set('views', 'public')
 app
     .use( express.static('public/static') )
     .use( express.urlencoded({ extended: true }) )
+    .use( logMiddleware )
     .use( router )
 
 app.listen( port, async () => {
