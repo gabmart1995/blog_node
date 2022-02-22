@@ -319,6 +319,37 @@ function getAllEntries() {
     })
 }
 
+function searchEntries( form ) {
+
+    return new Promise(( resolve, reject ) => {
+        
+        executeQuery( SQL.searchEntries, form, ( error, results ) => {
+            
+            if ( error ) {
+                
+                console.error( error )
+                
+                reject( error )
+                
+                return
+            }
+
+            if ( results.length === 0 ) {
+
+                resolve( null )
+
+                return
+            }
+            
+            // console.log( results )
+            
+            results = results.map( formatEntries )
+ 
+            resolve( results )
+        })
+    })
+}
+
 function getEntry( idEntry ) {
 
     return new Promise(( resolve, reject ) => {
@@ -408,5 +439,6 @@ module.exports = {
     getEntriesByCategory,
     getEntry,
     deleteEntry,
-    updateEntries
+    updateEntries,
+    searchEntries
 }

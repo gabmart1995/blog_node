@@ -37,6 +37,12 @@ body{
     border-radius: 2px;
 }
 
+.not-found {
+    position: absolute;
+    width: 100vh;
+    width: 100vw;
+}
+
 .alerta-error{
     background: red;
 }

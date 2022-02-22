@@ -2,13 +2,14 @@
 
 const express = require('express')
 const hbs = require('hbs')
+const path = require('path')
 
 const router = require('./routes/routes')
 const { connectDatabase } = require('./database/database')
 const app = express()
 const port = 3000
 
-hbs.registerPartials( __dirname + '/public/partials' )
+hbs.registerPartials( path.join( __dirname, 'public/partials' ))
 
 // hbs
 app.set('view engine', 'hbs')

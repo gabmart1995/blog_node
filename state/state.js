@@ -5,6 +5,7 @@ let STATE = {
     errorsCategory: null,
     errorsEntries: null,
     errorsProfile: null,
+    errorsSearch: null,
     register: false,
     delete: false,
     update: false,
@@ -16,6 +17,26 @@ let STATE = {
     category: null,
     entry: null,
     year: new Date().getFullYear()
+}
+
+function clearState() {
+    STATE = {
+        ...STATE,
+        errorsRegister: null,
+        errorsLogin: null,
+        errorsCategory: null,
+        errorsEntries: null,
+        errorsProfile: null,
+        register: false,
+        categories: [],
+        category: null,
+        lastEntries: [],
+        entry: null,
+        entries: [],
+        delete: false,
+        update: false,
+        errorsSearch: null
+    }
 }
 
 function registerAction( payload ) {
@@ -90,23 +111,8 @@ function setDelete() {
     return { type: 'setDelete' }
 }
 
-function clearState() {
-    STATE = {
-        ...STATE,
-        errorsRegister: null,
-        errorsLogin: null,
-        errorsCategory: null,
-        errorsEntries: null,
-        errorsProfile: null,
-        register: false,
-        categories: [],
-        category: null,
-        lastEntries: [],
-        entry: null,
-        entries: [],
-        delete: false,
-        update: false
-    }
+function setErrorsSearchAction( payload ) {
+    return { type: 'setErrorsSearch', payload }
 }
 
 function dispatch( action ) {
@@ -163,6 +169,9 @@ function dispatch( action ) {
         case 'update':
             return STATE = { ...STATE, update: action.payload }
 
+        case 'setErrorsSearch':
+            return STATE = { ...STATE, errorsSearch: action.payload }
+
         default:
             return STATE
     }
@@ -188,5 +197,6 @@ module.exports = {
     setCategoryAction,
     setEntryAction,
     setDelete,
-    updateAction
+    updateAction,
+    setErrorsSearchAction
 }

@@ -13,7 +13,8 @@ const {
     getCategory,
     getEntry,
     deleteEntry,
-    updateEntries
+    updateEntries,
+    searchEntries
 } = require('../helpers/helpers')
 
 const state = require('../state/state')
@@ -726,10 +727,81 @@ router.post('/update-entries', async ( request, response ) => {
     response.redirect( '/edit-entry?id=' + id )
 })
 
+router.post('/search', async ( request, response ) => {
+
+    const form = request.body
+    const errorsSearch = new Map()
+
+    // console.log( form )
+
+    if ( !regex.string.test( form.busqueda ) ) {
+        errorsSearch.set('search', 'El patrón de busqueda no es válido')
+    }
+
+    if ( errorsSearch.size > 0 ) {
+        
+        // console.log( errorsSearch )
+        
+        state.dispatch( 
+            state.setErrorsSearchAction({ busqueda: errorsSearch.get('search') }) 
+        )
+        
+    } else {
+
+        try {
+            
+            const entries = await searchEntries({ search: '%' + form.busqueda + '%' })
+            const categories = await getCategories()
+
+            // console.log( entries )
+
+            state.dispatch( state.getEntriesAction( entries ) )
+            state.dispatch( state.getCategoriesAction( categories ) )
+
+        } catch ( error ) {
+            
+            state.dispatch( state.getEntriesAction([]) )
+            state.dispatch( state.getCategoriesAction([]) )
+
+            state.dispatch( 
+                state.setErrorsSearchAction({ 
+                    search: errorsSearch.get('search'), 
+                    general: error.message
+                }) 
+            )
+        }
+    }
+
+    // renderiza la vista de resultados
+    response.render('search', { ...state.getState(), search: form.busqueda })
+
+    state.clearState()
+})
+
 // route 404
-router.all('*', ( request, response ) => {
-    response.status(404)
-    response.send('not found')
+router.all('*', async ( request, response ) => {
+
+    try {
+        
+        const categories = await getCategories()
+
+        state.dispatch( state.getCategoriesAction( categories ) )
+
+    } catch ( error ) {
+        
+        console.error( error )
+
+        state.dispatch( state.getEntriesAction([]) )
+    
+    } finally {
+
+        response
+            .status(404)
+            .render('404', state.getState())
+
+        state.clearState()
+    }
+
 })
 
 module.exports = router
