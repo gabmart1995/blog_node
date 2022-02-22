@@ -10,6 +10,11 @@
             Edita tu entrada: <b>{{ entry.titulo }}</b>
         </p><br />
 
+        {{#if update}}
+            <div class="alerta alerta-exito">La entrada se actualizó con exito</div>
+        {{/if}}
+
+
         {{#if errorsEntries }}
             {{#if errorsEntries.general }}
                 <div class="alerta alerta-error">{{ errorsEntries.general }}</div>
@@ -17,7 +22,7 @@
         {{/if}}
 
 
-        <form action="/save-entries" method="POST">
+        <form action="/update-entries?id={{ entry.id }}" method="POST">
             
             <label for="titulo">Titulo:</label>
             <input type="text" value="{{ entry.titulo }}" name="titulo" id="titulo" >
@@ -37,9 +42,8 @@
 
             <label for="categoria">Categoria</label>
             
+            <!-- select categories -->
             {{#select-category}}{{/select-category}}
-
-            </select>
             {{#if errorsEntries }}
                 {{#if errorsEntries.categoria }}
                     <div class="alerta alerta-error">{{ errorsEntries.categoria }}</div>

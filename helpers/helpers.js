@@ -375,6 +375,26 @@ function deleteEntry( idEntry, idUser ) {
     })
 }
 
+
+function updateEntries( form ) {
+    
+    return new Promise(( resolve, reject ) => {
+        executeQuery( SQL.updateEntries, form, ( error ) => {
+            
+            if ( error ) {
+                
+                console.error( error )
+
+                reject( new Error('Ocurrio un problema con la actualizacion de la entrada') )
+            
+                return
+            }
+
+            resolve()
+        })
+    })
+}
+
 module.exports = {
     insertUser,
     loginUser,
@@ -387,5 +407,6 @@ module.exports = {
     getCategory,
     getEntriesByCategory,
     getEntry,
-    deleteEntry
+    deleteEntry,
+    updateEntries
 }

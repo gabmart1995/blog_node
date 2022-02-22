@@ -12,7 +12,8 @@ const {
     getEntriesByCategory,
     getCategory,
     getEntry,
-    deleteEntry
+    deleteEntry,
+    updateEntries
 } = require('../helpers/helpers')
 
 const state = require('../state/state')
@@ -537,7 +538,6 @@ router.get('/entries', async ( request, response ) => {
     }
 })
 
-
 router.get('/entry', async ( request, response ) => {
 
     let isAuthor = false  // flag autor del post
@@ -619,7 +619,7 @@ router.get('/edit-entry', async ( request, response ) => {
         
         const categories = await getCategories()
         const entry = await getEntry( Number( id ) )
-        
+
         // helper component
         hbs.registerHelper('select-category', () => {
             return (`
@@ -628,8 +628,9 @@ router.get('/edit-entry', async ( request, response ) => {
                     ${ categories.map( category => (`
                             <option 
                                 value="${ category.id }" 
-                                ${ category.id === entry.categoria_id ? 'selected' : '' }>
-                                    ${ category.nombre }
+                                ${ category.id === entry.categoria_id ? 'selected' : '' }
+                            >
+                                ${ category.nombre }
                             </option>
                         `)).join('') 
                     }
@@ -640,7 +641,7 @@ router.get('/edit-entry', async ( request, response ) => {
         state.dispatch( state.setEntryAction( entry ) )
         state.dispatch( state.getCategoriesAction( categories ) )
 
-    } catch (error) {
+    } catch ( error ) {
 
         console.error( error )
 
@@ -652,6 +653,77 @@ router.get('/edit-entry', async ( request, response ) => {
         response.render('edit-entries', state.getState() )
         state.clearState()
     }
+})
+
+router.post('/update-entries', async ( request, response ) => {
+    
+    const form = request.body
+    const { id } = request.query
+    const errorsEntries = new Map()
+    
+    // console.log({ id, form })
+
+    if ( !regex.onlyNumbers.test( id ) ) {
+        errorsEntries.set('id', 'el identificador de la entrada no es válido')
+    }
+
+    if ( !form.titulo || !regex.descriptionString.test( form.titulo ) ) {
+        errorsEntries.set('titulo', 'El titulo de la entrada no es valido')
+    }
+
+    if ( !form.descripcion || !regex.descriptionString.test( form.descripcion ) ) {
+        errorsEntries.set('descripcion', 'La descripcion no es valida')
+    }
+
+    if ( !form.categoria || !regex.onlyNumbers.test( form.categoria ) ) {
+        errorsEntries.set('categoria', 'debe seleccionar al menos una categoria')
+    }
+
+    if ( errorsEntries.size > 0 ) {
+
+        // console.log( errorsEntries )
+
+        state.dispatch( 
+            state.errorsEntriesAction({
+                titulo: errorsEntries.get('titulo'),
+                descripcion: errorsEntries.get('descripcion'),
+                categoria: errorsEntries.get('categoria'),
+                id: errorsEntries.get('id')
+            }) 
+        )
+
+        state.dispatch( state.updateAction( false ) )
+                
+    } else {
+        
+        try {
+            
+            await updateEntries({ 
+                ...form, 
+                categoria: Number( form.categoria ), 
+                id: Number( id ), 
+                usuario_id: state.getState().userLogged.id
+            })
+
+            state.dispatch( state.updateAction( true ) )
+            
+        } catch ( error ) {
+        
+            state.dispatch( 
+                state.errorsEntriesAction({
+                    titulo: errorsEntries.get('titulo'),
+                    descripcion: errorsEntries.get('descripcion'),
+                    categoria: errorsEntries.get('categoria'),
+                    id: errorsEntries.get('id'),
+                    general: error.message
+                })
+            )
+
+            state.dispatch( state.updateAction( false ) )
+        }
+    }
+    
+    response.redirect( '/edit-entry?id=' + id )
 })
 
 // route 404

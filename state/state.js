@@ -7,6 +7,7 @@ let STATE = {
     errorsProfile: null,
     register: false,
     delete: false,
+    update: false,
     login: false,
     userLogged: null,
     categories: [],
@@ -19,6 +20,10 @@ let STATE = {
 
 function registerAction( payload ) {
     return { type: 'register', payload }
+}
+
+function updateAction( payload ) {
+   return { type: 'update', payload } 
 }
 
 function getEntriesByCategoryAction( payload ) {
@@ -99,7 +104,8 @@ function clearState() {
         lastEntries: [],
         entry: null,
         entries: [],
-        delete: false
+        delete: false,
+        update: false
     }
 }
 
@@ -154,6 +160,9 @@ function dispatch( action ) {
         case 'setDelete':
             return STATE = { ...STATE, delete: true }
 
+        case 'update':
+            return STATE = { ...STATE, update: action.payload }
+
         default:
             return STATE
     }
@@ -178,5 +187,6 @@ module.exports = {
     getEntriesByCategoryAction,
     setCategoryAction,
     setEntryAction,
-    setDelete
+    setDelete,
+    updateAction
 }
