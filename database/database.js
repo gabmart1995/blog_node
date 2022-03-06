@@ -50,15 +50,18 @@ connection.config.queryFormat = function ( query, values ) {
 function connectDatabase() {
     
     return new Promise(( resolve, reject ) => {
-        
+
         connection.connect( error => {
 
             if ( error ) {
+                
                 reject( error )
+                
                 return
             }
 
             console.log('Base de datos conectada')
+
             resolve()
         })
     })
@@ -73,12 +76,15 @@ function closeConnection() {
     return new Promise((resolve, reject) => {
         
         connection.end( error => {
+
             if ( error ) {
                 reject( error )
+                
                 return
             }
 
-            console.log('Base de datos cerrada')
+            console.log('\nBase de datos desconectada')
+
             resolve()
         })
     })

@@ -19,6 +19,7 @@ const {
 
 const state = require('../state/state')
 const hbs = require('hbs')
+const { loggedMiddleware } = require('../middleware/middleware')
 
 const regex = Object.freeze({
     string: (/^[A-Za-z\s]{1,25}$/),
@@ -138,15 +139,7 @@ router.post('/register', async ( request, response ) => {
 })
 
 // profile
-router.get('/profile', async ( request, response ) => {
-
-    const { login } = state.getState()
-
-    if ( !login ) {
-        response.redirect('/')
-
-        return
-    }
+router.get('/profile', [ loggedMiddleware ], async ( request, response ) => {
 
     try {
         const categories = await getCategories()  
@@ -291,17 +284,7 @@ router.post('/login', async ( request, response ) => {
 })
 
 // category
-router.get('/create-category', async ( request, response ) => {
-
-    const { login } = state.getState()
-    
-    // verificar si el usuario esta logueado
-    if ( !login ) {
-        
-        response.redirect('/')
-        
-        return
-    }
+router.get('/create-category', [ loggedMiddleware ], async ( request, response ) => {
 
     try {
         
@@ -417,15 +400,7 @@ router.get('/category', async ( request, response ) => {
 })
 
 // entries
-router.get('/create-entries', async ( request, response ) => {
-
-    const { login } = state.getState()
-
-    if ( !login ) {
-        response.redirect('/')
-
-        return
-    }
+router.get('/create-entries', [ loggedMiddleware ], async ( request, response ) => {
 
     try {
 
@@ -607,11 +582,12 @@ router.get('/delete-entry', async ( request, response ) => {
     }
 })
 
-router.get('/edit-entry', async ( request, response ) => {
+router.get('/edit-entry', [ loggedMiddleware ], async ( request, response ) => {
 
     const { id } = request.query
 
-    if ( !state.getState().login || !regex.onlyNumbers.test( id ) ) {
+    if ( !regex.onlyNumbers.test( id ) ) {
+        
         response.redirect('/')
         return
     }
