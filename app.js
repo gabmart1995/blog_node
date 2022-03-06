@@ -4,7 +4,8 @@ const EventEmitter = require('events')
 class DatabaseEmitter extends EventEmitter {}
 const databaseEmitter = new DatabaseEmitter()
 
-// const https = require('https')
+const https = require('https')
+const fs = require('fs')
 const express = require('express')
 const hbs = require('hbs')
 const path = require('path')
@@ -67,8 +68,25 @@ databaseEmitter.once('close', async () => {
 
 
 // app listen devuelve una instancia del servidor de node http    
-app.listen( port, () => databaseEmitter.emit('connect') )
+// app.listen( port, () => databaseEmitter.emit('connect') )
 
-/** Para habilitar el https necesitas la clave crt y el key, pasandole el http server de express */
-// const serverHttps = https.createServer({ key: '', cert: '' }, app )
-// serverHttps.listen( 23, () => databaseEmitter.emit('connect') )
+/** 
+ * Para habilitar el https necesitas la clave crt y el key, 
+ * pasandole el http server de express 
+ */
+
+try {
+    
+    const key = fs.readFileSync('./test_key.key')
+    const cert = fs.readFileSync('./test_cert.crt')
+
+    const server = https.createServer({ key, cert }, app )
+    
+    server.listen( port, () => databaseEmitter.emit('connect') )
+
+} catch ( error ) {
+
+    console.log( error )
+}
+
+
