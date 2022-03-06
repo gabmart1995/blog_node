@@ -13,7 +13,7 @@ const path = require('path')
 const router = require('./routes/routes')
 const { connectDatabase, closeConnection } = require('./database/database')
 const app = express()
-const port = 3000
+const port = 8443
 
 hbs.registerPartials( path.join( __dirname, 'public/partials' ))
 
@@ -79,7 +79,6 @@ try {
     
     const key = fs.readFileSync('./test_key.key')
     const cert = fs.readFileSync('./test_cert.crt')
-
     const server = https.createServer({ key, cert }, app )
     
     server.listen( port, () => databaseEmitter.emit('connect') )
