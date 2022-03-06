@@ -4,7 +4,7 @@ const EventEmitter = require('events')
 class DatabaseEmitter extends EventEmitter {}
 const databaseEmitter = new DatabaseEmitter()
 
-const https = require('https')
+// const https = require('https')
 const express = require('express')
 const hbs = require('hbs')
 const path = require('path')
