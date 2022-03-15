@@ -28,7 +28,7 @@ function clearState() {
         errorsEntries: null,
         errorsProfile: null,
         register: false,
-        categories: [],
+        // categories: [],
         category: null,
         lastEntries: [],
         entry: null,

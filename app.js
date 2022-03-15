@@ -1,19 +1,21 @@
 'use strict'
 
 const EventEmitter = require('events')
+const path = require('path')
+
 class DatabaseEmitter extends EventEmitter {}
 const databaseEmitter = new DatabaseEmitter()
 
-const https = require('https')
-const fs = require('fs')
 const express = require('express')
 const hbs = require('hbs')
-const path = require('path')
+const session = require('express-session')
 
-const router = require('./routes/routes')
-const { connectDatabase, closeConnection } = require('./database/database')
+const { connectDatabase, getInstanceMySQLStore, closeConnection } = require('./database/database')
+const router = require('./routes')
+
 const app = express()
-const port = 8443
+const port = 8080
+// const cookieLimit = ( 1000 * 60 * 60 * 24 );
 
 hbs.registerPartials( path.join( __dirname, 'public/partials' ))
 
@@ -23,6 +25,15 @@ app.set('views', 'public')
 
 // servir contenido estatico
 app
+    .use( session({ 
+        secret: 'API_KEY_SECRET', 
+        saveUninitialized: false, 
+        resave: false, 
+        store: new getInstanceMySQLStore().store(
+                {}, 
+                getInstanceMySQLStore().connection 
+            )
+    }) )
     .use( express.static('public/static') )
     .use( express.urlencoded({ extended: true }) )
     .use( router )
@@ -68,12 +79,16 @@ databaseEmitter.once('close', async () => {
 
 
 // app listen devuelve una instancia del servidor de node http    
-// app.listen( port, () => databaseEmitter.emit('connect') )
+app.listen( port, () => databaseEmitter.emit('connect') )
 
 /** 
  * Para habilitar el https necesitas la clave crt y el key, 
  * pasandole el http server de express 
  */
+
+/*
+// const https = require('https')
+// const fs = require('fs')
 
 try {
     
@@ -86,6 +101,6 @@ try {
 } catch ( error ) {
 
     console.error( error )
-}
+}*/
 
 

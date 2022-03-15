@@ -1,4 +1,5 @@
 const mysql = require('mysql')
+const MySQLStore = require('express-mysql-session')
 
 const SQL = Object.freeze({
     login: 'SELECT * FROM usuarios WHERE email = :email',
@@ -71,6 +72,14 @@ function executeQuery( query, data, callback ) {
     connection.query( query, data, callback )
 }
 
+function getInstanceMySQLStore( session ) {
+    return  { 
+        store:  MySQLStore(session),
+        connection
+    }
+}
+
+
 function closeConnection() {
     
     return new Promise((resolve, reject) => {
@@ -94,5 +103,6 @@ module.exports = {
     connectDatabase,
     executeQuery,
     closeConnection,
-    SQL
+    SQL,
+    getInstanceMySQLStore
 }

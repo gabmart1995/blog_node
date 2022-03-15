@@ -30,13 +30,13 @@ const regex = Object.freeze({
 
 // index
 router.get('/', async ( request, response ) => {
-    
+
     try {
 
         const categories = await getCategories()
-        const lastEntries = await getLastEntries()
-
         state.dispatch( state.getCategoriesAction( categories ) )
+        
+        const lastEntries = await getLastEntries()
         state.dispatch( state.getLastEntriesAction( lastEntries ) )
 
     } catch ( error ) {
