@@ -227,22 +227,6 @@ router.post('/update-profile', async ( request, response ) => {
             
             await updateUser({ ...form, id: userLogged.id })
             
-            /* state.dispatch( state.registerAction( true ) )
-    
-            // cambia los datos del usuario en el estado
-            const data = {
-                ...JSON.parse( request.cookies.session_id ),
-                userLogged: { 
-                    ...JSON.parse( request.cookies.session_id ).userLogged,
-                    nombre: user.name,
-                    apellidos: user.surname,
-                    id: user.id,
-                    email: user.email,
-                    fecha: userLogged.fecha
-                 }
-            }
-            */
-
             // eliminamos la cookie y le pedimos al usuario que se authentique
             // para registrar nuevamente la session
             response.clearCookie('session_id')
@@ -891,9 +875,17 @@ router.all('*', async ( request, response ) => {
     
     } finally {
 
+        const { cookies } = request
+        const data = {
+            ...state.getState(), 
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null,
+        }
+
         response
             .status(404)
-            .render('404', state.getState())
+            .render('404', data )
 
         state.clearState()
     }
