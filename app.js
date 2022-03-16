@@ -2,105 +2,111 @@
 
 const EventEmitter = require('events')
 const path = require('path')
-
-class DatabaseEmitter extends EventEmitter {}
-const databaseEmitter = new DatabaseEmitter()
-
 const express = require('express')
 const hbs = require('hbs')
 const session = require('express-session')
 
-const { connectDatabase, getInstanceMySQLStore, closeConnection } = require('./database/database')
-const router = require('./routes')
+const { connectDatabase, closeConnection } = require('./database/database')
+const cookieParser = require('cookie-parser')
 
-const app = express()
-const port = 8080
-// const cookieLimit = ( 1000 * 60 * 60 * 24 );
+function startServer( port = 8080 ) {
+    
+    const router = require('./routes')
+    const app = express()
 
-hbs.registerPartials( path.join( __dirname, 'public/partials' ))
+    class DatabaseEmitter extends EventEmitter {}
+    
+    const databaseEmitter = new DatabaseEmitter()
 
-// hbs
-app.set('view engine', 'hbs')
-app.set('views', 'public')
+    hbs.registerPartials( path.join( __dirname, 'public/partials' ))
 
-// servir contenido estatico
-app
-    .use( session({ 
-        secret: 'API_KEY_SECRET', 
-        saveUninitialized: false, 
-        resave: false, 
-        store: new getInstanceMySQLStore().store(
-                {}, 
-                getInstanceMySQLStore().connection 
-            )
-    }) )
-    .use( express.static('public/static') )
-    .use( express.urlencoded({ extended: true }) )
-    .use( router )
+    // hbs
+    app.set('view engine', 'hbs')
+    app.set('views', 'public')
+
+    // servir contenido estatico
+    app
+       .use( session({ 
+            secret: 'API_KEY_SECRET', 
+            saveUninitialized: false,  // salva la cookie cuando hay un cambio en la variable session 
+            resave: false ,
+            cookie: {
+                maxAge: 1000 * 60 * 60 * 24
+            }
+        }))
+        .use( express.static('public/static') )
+        .use( express.urlencoded({ extended: true }) )
+        .use( cookieParser() )
+        .use( router )
 
 
-// process close
-process.once('SIGINT', () => databaseEmitter.emit('close'))
-process.once('SIGTERM', () => databaseEmitter.emit('close') )
+    // process close
+    process.once('SIGINT', () => databaseEmitter.emit('close'))
+    process.once('SIGTERM', () => databaseEmitter.emit('close') )
 
-// event listeners
-databaseEmitter.once('connect', async () => {
+    // event listeners
+    databaseEmitter.once('connect', async () => {
+
+        try {
+
+            await connectDatabase()
+            
+            console.log('Servidor funcionando en el puerto %d', port )
+            
+        } catch ( error ) {
+            
+            console.error( error )
+
+            process.exit(1)
+        }
+    })
+
+    databaseEmitter.once('close', async () => {
+        
+        try {
+
+            await closeConnection()
+            
+            // cierra el session store
+            // sessionStore.close();
+            
+            // cierra el proceso abierto
+            process.exit(0)
+            
+        } catch ( error ) {
+            
+            console.error( error )
+
+            process.exit(1)
+        }
+    })
+
+
+    // app listen devuelve una instancia del servidor de node http    
+    app.listen( port, () => databaseEmitter.emit('connect') )
+
+    /** 
+     * Para habilitar el https necesitas la clave crt y el key, 
+     * pasandole el http server de express 
+     */
+
+    /*
+    // const https = require('https')
+    // const fs = require('fs')
 
     try {
+        
+        const key = fs.readFileSync('./test_key.key')
+        const cert = fs.readFileSync('./test_cert.crt')
+        const server = https.createServer({ key, cert }, app )
+        
+        server.listen( port, () => databaseEmitter.emit('connect') )
 
-        await connectDatabase()
-        
-        console.log('Servidor funcionando en el puerto %d', port )
-        
     } catch ( error ) {
-        
+
         console.error( error )
+    }*/
+}
 
-        process.exit(1)
-    }
-})
-
-databaseEmitter.once('close', async () => {
-    
-    try {
-
-        await closeConnection()
-        
-        // cierra el proceso abierto
-        process.exit(0)
-        
-    } catch ( error ) {
-        
-        console.error( error )
-
-        process.exit(1)
-    }
-})
-
-
-// app listen devuelve una instancia del servidor de node http    
-app.listen( port, () => databaseEmitter.emit('connect') )
-
-/** 
- * Para habilitar el https necesitas la clave crt y el key, 
- * pasandole el http server de express 
- */
-
-/*
-// const https = require('https')
-// const fs = require('fs')
-
-try {
-    
-    const key = fs.readFileSync('./test_key.key')
-    const cert = fs.readFileSync('./test_cert.crt')
-    const server = https.createServer({ key, cert }, app )
-    
-    server.listen( port, () => databaseEmitter.emit('connect') )
-
-} catch ( error ) {
-
-    console.error( error )
-}*/
-
+startServer()
 

@@ -2,6 +2,43 @@
 const bcrypt = require('bcryptjs')
 const { executeQuery, SQL } = require('../database/database')
 
+function createSesion( data ) {
+    return new Promise(( resolve, reject ) => {
+
+        executeQuery( SQL.createSession, data, ( error ) => {
+
+            if ( error ) {
+                console.error( error )
+
+                reject( error )
+
+                return
+            }
+
+            resolve();
+        })
+    })
+}
+
+function deleteSesion( data ) {
+    return new Promise(( resolve, reject ) => {
+
+        executeQuery( SQL.deleteSession, data, ( error ) => {
+
+            if ( error ) {
+                console.error( error )
+
+                reject( error )
+
+                return
+            }
+
+            resolve();
+        })
+    })
+}
+
+
 function insertUser( form ) {
     
     return new Promise(( resolve, reject ) => {
@@ -427,6 +464,7 @@ function updateEntries( form ) {
 }
 
 module.exports = {
+    deleteSesion,
     insertUser,
     loginUser,
     getCategories,
@@ -440,5 +478,6 @@ module.exports = {
     getEntry,
     deleteEntry,
     updateEntries,
-    searchEntries
+    searchEntries,
+    createSesion
 }

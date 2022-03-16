@@ -14,7 +14,9 @@ const {
     getEntry,
     deleteEntry,
     updateEntries,
-    searchEntries
+    searchEntries,
+    createSesion,
+    deleteSesion
 } = require('../helpers/helpers')
 
 const state = require('../state/state')
@@ -49,7 +51,11 @@ router.get('/', async ( request, response ) => {
     } finally {
         
         // console.log( state.getState() )
-        response.render('index', state.getState() )
+        response.render('index', { 
+            ...state.getState(), 
+            login: request.session.isAuth || false 
+            
+        })
 
         // limpia el estado despues de renderizar la vista
         // para la limpieza de los formularios
@@ -58,7 +64,7 @@ router.get('/', async ( request, response ) => {
 })
 
 // logout session
-router.get('/logout', ( request, response ) => {
+router.get('/logout', async ( request, response ) => {
 
     const STATE = state.getState()
 
@@ -67,6 +73,24 @@ router.get('/logout', ( request, response ) => {
     }
 
     // console.log( STATE )
+
+    try {
+
+        await deleteSesion({ session_id: request.session.id })
+
+        request.session.isAuth = false
+
+        // limpia la cookie
+        response.clearCookie('session_id');
+
+        // destruye las variables de sesion
+        request.session.destroy();
+    
+    } catch ( error ) {
+
+        console.error( error )
+    }
+
 
     response.redirect('/')
 })
@@ -261,13 +285,37 @@ router.post('/login', async ( request, response ) => {
         
         try {
             
-           const userLogged = await loginUser( form )
+            const userLogged = await loginUser( form )
+            const TIME_EXPIRED_SESSION = ( 1000 * 60 * 60 * 24 ) 
+
+            console.log( userLogged )
 
             state.dispatch( state.loginAction( true ) )
             state.dispatch( state.userLoggedAction( userLogged ) )
+
+            // seteamos la variable de session
+            request.session.isAuth = true
+            
+            // registramos en la bd la sesion
+            await createSesion({
+                session_id: request.session.id,
+                expires: Date.now() + TIME_EXPIRED_SESSION,
+                data: ''
+            })
+
+            // enviamos la cookie al cliente
+            response.cookie(
+                'session_id', 
+                request.session.id,  
+                { maxAge: TIME_EXPIRED_SESSION }
+            )
+
+            // console.log( request.session.id )
             
         } catch ( error ) {
             
+            console.error( error )
+
             state.dispatch( state.loginAction( false ) )
             state.dispatch( 
                 state.errorsLoginAction({

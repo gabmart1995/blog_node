@@ -26,3 +26,11 @@ CONSTRAINT pk_entradas PRIMARY KEY(id),
 CONSTRAINT fk_entrada_usuario FOREIGN KEY(usuario_id) REFERENCES usuarios(id),
 CONSTRAINT fk_entrada_categoria FOREIGN KEY(categoria_id) REFERENCES categorias(id) ON DELETE NO ACTION
 )ENGINE=InnoDb;
+
+/* session table control of users */
+CREATE TABLE IF NOT EXISTS blog_sessions (
+  session_id varchar(128) COLLATE utf8mb4_bin NOT NULL,
+  expires bigint unsigned NOT NULL,
+  data mediumtext COLLATE utf8mb4_bin,
+  PRIMARY KEY (`session_id`)
+) ENGINE=InnoDB

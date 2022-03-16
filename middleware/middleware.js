@@ -2,18 +2,23 @@ const state = require('../state/state')
 
 function loggedMiddleware( request, response, next ) {
     
-    // console.log('paso por el middleware')
+    const { cookies } = request
 
-    const { login } = state.getState()
+    if ( 'session_id' in cookies ) {
 
-    if ( !login ) {
-        
-        response.redirect('/')
+        if ( request.session.isAuth ) {
+
+            next()
+
+            return;
+        }
+
+        response.status(403).redirect('/')
 
         return
     }
 
-    next()
+    response.status(403).redirect('/')
 }
 
 module.exports = { loggedMiddleware }
