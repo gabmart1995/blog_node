@@ -10,7 +10,7 @@ let STATE = {
     delete: false,
     update: false,
     login: false,
-    userLogged: null,
+    // userLogged: null,
     categories: [],
     lastEntries: [],
     entries: [],

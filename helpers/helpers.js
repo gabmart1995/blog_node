@@ -20,6 +20,24 @@ function createSesion( data ) {
     })
 }
 
+function getSession( data ) {
+    return new Promise(( resolve, reject ) => {
+        
+        executeQuery( SQL.getSession, data, ( error, results ) => {
+            if ( error ) {
+                
+                console.error( error )
+
+                reject( error )
+
+                return
+            }
+
+            resolve( results[0] )
+        })
+    })
+}
+
 function deleteSesion( data ) {
     return new Promise(( resolve, reject ) => {
 
@@ -479,5 +497,6 @@ module.exports = {
     deleteEntry,
     updateEntries,
     searchEntries,
-    createSesion
+    createSesion,
+    getSession
 }

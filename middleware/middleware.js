@@ -1,24 +1,39 @@
-const state = require('../state/state')
+const { getSession } = require("../helpers/helpers")
 
-function loggedMiddleware( request, response, next ) {
+async function loggedMiddleware( request, response, next ) {
     
     const { cookies } = request
 
+    // console.log( cookies )
+
     if ( 'session_id' in cookies ) {
 
-        if ( request.session.isAuth ) {
+        // busca en la bd el registro en session
+        try {
+            
+            const data = JSON.parse( cookies.session_id )
+            const session = await getSession({ session_id: data.session_id })
 
-            next()
+            // console.log({ data, session })
+            
+            if ( session ) {
+                next()
+                return
+            
+            } else {
+                throw new Error('session no encontrada')
+            }
 
-            return;
+        } catch ( error ) {
+            
+            // console.error( error )
+
+            response.status(403).redirect('/logout')
+            return
         }
-
-        response.status(403).redirect('/')
-
-        return
     }
 
-    response.status(403).redirect('/')
+    response.status(403).redirect('/logout')
 }
 
 module.exports = { loggedMiddleware }

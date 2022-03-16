@@ -33,6 +33,8 @@ const regex = Object.freeze({
 // index
 router.get('/', async ( request, response ) => {
 
+    // console.log( 'session_id' in request.cookies )
+
     try {
 
         const categories = await getCategories()
@@ -53,8 +55,9 @@ router.get('/', async ( request, response ) => {
         // console.log( state.getState() )
         response.render('index', { 
             ...state.getState(), 
-            login: request.session.isAuth || false 
-            
+            login: 'session_id' in request.cookies || false, 
+            userLogged: 'session_id' in request.cookies ? 
+                JSON.parse( request.cookies.session_id ).userLogged : null
         })
 
         // limpia el estado despues de renderizar la vista
@@ -80,11 +83,12 @@ router.get('/logout', async ( request, response ) => {
 
         request.session.isAuth = false
 
-        // limpia la cookie
-        response.clearCookie('session_id');
+        // limpia las cookie
+        response.clearCookie('session_id')
+        response.clearCookie('connect.sid')
 
-        // destruye las variables de sesion
-        request.session.destroy();
+        // destruye la session
+        request.session.destroy()
     
     } catch ( error ) {
 
@@ -185,7 +189,7 @@ router.post('/update-profile', async ( request, response ) => {
 
     const form = request.body
     const errorsProfile = new Map()
-    const userLogged = state.getState().userLogged
+    const userLogged = JSON.parse( request.cookies.session_id ).userLogged
 
     if ( !form.name || !regex.string.test( form.name.trim() ) ) {
         errorsProfile.set('name', 'El nombre no es valido')
@@ -221,21 +225,27 @@ router.post('/update-profile', async ( request, response ) => {
         
         try {
             
-            const user = await updateUser({ ...form, id: userLogged.id })
+            await updateUser({ ...form, id: userLogged.id })
             
-            state.dispatch( state.registerAction( true ) )
-            
+            /* state.dispatch( state.registerAction( true ) )
+    
             // cambia los datos del usuario en el estado
-            state.dispatch( state.userLoggedAction({
+            const data = {
+                ...JSON.parse( request.cookies.session_id ),
+                userLogged: { 
+                    ...JSON.parse( request.cookies.session_id ).userLogged,
                     nombre: user.name,
                     apellidos: user.surname,
                     id: user.id,
                     email: user.email,
                     fecha: userLogged.fecha
-                }) 
-            )
+                 }
+            }
+            */
 
-            // console.log( state.getState() )
+            // eliminamos la cookie y le pedimos al usuario que se authentique
+            // para registrar nuevamente la session
+            response.clearCookie('session_id')
         
         } catch ( error ) {
 
@@ -288,15 +298,10 @@ router.post('/login', async ( request, response ) => {
             const userLogged = await loginUser( form )
             const TIME_EXPIRED_SESSION = ( 1000 * 60 * 60 * 24 ) 
 
-            console.log( userLogged )
-
-            state.dispatch( state.loginAction( true ) )
-            state.dispatch( state.userLoggedAction( userLogged ) )
-
-            // seteamos la variable de session
-            request.session.isAuth = true
             
-            // registramos en la bd la sesion
+            request.session.isAuth = true
+
+            // registramos en la bd la session del usuario
             await createSesion({
                 session_id: request.session.id,
                 expires: Date.now() + TIME_EXPIRED_SESSION,
@@ -306,9 +311,16 @@ router.post('/login', async ( request, response ) => {
             // enviamos la cookie al cliente
             response.cookie(
                 'session_id', 
-                request.session.id,  
+                JSON.stringify({
+                    session_id: request.session.id,
+                    userLogged: { ...userLogged }
+                }),  
                 { maxAge: TIME_EXPIRED_SESSION }
             )
+            
+            // establecemos el estado
+            state.dispatch( state.loginAction( true ) )
+            state.dispatch( state.userLoggedAction( userLogged ) )
 
             // console.log( request.session.id )
             
@@ -431,7 +443,17 @@ router.get('/category', async ( request, response ) => {
         state.dispatch( state.setCategoryAction( category ) )
         state.dispatch( state.getEntriesByCategoryAction( entries ) )
 
-        response.render('category', state.getState())
+        const { cookies } = request
+        
+        const data = {
+            ...state.getState(), 
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null,
+        }
+
+        response.render('category', data )
+        
         state.clearState()
 
     } catch ( error ) {
@@ -442,7 +464,17 @@ router.get('/category', async ( request, response ) => {
         state.dispatch( state.setCategoryAction( null ) )
         state.dispatch( state.getEntriesByCategoryAction([]) )
         
-        response.render('category', state.getState())
+        const { cookies } = request
+        
+        const data = {
+            ...state.getState(), 
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null,
+        }
+
+        response.render('category', data )
+
         state.clearState()
     } 
 })
@@ -463,8 +495,17 @@ router.get('/create-entries', [ loggedMiddleware ], async ( request, response ) 
     } finally {
 
         // console.log( state.getState() )
+
         
-        response.render('create-entries', state.getState())
+        const { cookies } = request
+        const data = {
+            ...state.getState(), 
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null,
+        }
+        
+        response.render('create-entries', data)
 
         state.clearState()
     }
@@ -509,10 +550,12 @@ router.post('/save-entries', async ( request, response ) => {
         
         try {
             
+            const { cookies } = request
+
             await createEntries({ 
                 titulo: form.titulo.trim(),
                 descripcion: form.descripcion.trim(),
-                usuario_id: state.getState().userLogged.id,
+                usuario_id: JSON.parse( cookies.session_id ).userLogged.id,
                 categoria_id: Number( form.categoria )
             })
 
@@ -577,8 +620,8 @@ router.get('/entry', async ( request, response ) => {
         const categories = await getCategories()
         const entry = await getEntry( Number( id ) )
         
-        if ( state.getState().login ) {
-            isAuthor = entry.usuario_id === state.getState().userLogged.id;
+        if ( 'session_id' in request.cookies ) {
+            isAuthor = entry.usuario_id === JSON.parse( request.cookies.session_id ).userLogged.id;
         }
 
         state.dispatch( state.getCategoriesAction( categories ) )
@@ -591,11 +634,21 @@ router.get('/entry', async ( request, response ) => {
         state.dispatch( state.getCategoriesAction([]) )
         state.dispatch( state.setEntryAction( null ) )
 
-        console.log( error )
+        // console.log( error )
     
     } finally {
 
-        response.render('entry', { ...state.getState(), isAuthor })
+        const { cookies } = request
+        const data = {
+            ...state.getState(), 
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null,
+            isAuthor
+        }
+
+        response.render('entry', data )
+
         state.clearState()
     }
 })
@@ -613,7 +666,7 @@ router.get('/delete-entry', async ( request, response ) => {
     
     try {
         
-        await deleteEntry( Number( id ), state.getState().userLogged.id )
+        await deleteEntry( Number( id ), JSON.parse( request.cookies.session_id ).userLogged.id )
 
         state.dispatch( state.setDelete() )
         
@@ -675,7 +728,15 @@ router.get('/edit-entry', [ loggedMiddleware ], async ( request, response ) => {
 
     } finally {
 
-        response.render('edit-entries', state.getState() )
+        const { cookies } = request
+        const data = {
+            ...state.getState(), 
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null,
+        }
+
+        response.render('edit-entries', data )
         state.clearState()
     }
 })
@@ -723,11 +784,13 @@ router.post('/update-entries', async ( request, response ) => {
         
         try {
             
+            // console.log('usuario: ' + JSON.parse( request.cookies.session_id ).userLogged.id )
+
             await updateEntries({ 
                 ...form, 
                 categoria: Number( form.categoria ), 
                 id: Number( id ), 
-                usuario_id: state.getState().userLogged.id
+                usuario_id: JSON.parse( request.cookies.session_id ).userLogged.id
             })
 
             state.dispatch( state.updateAction( true ) )
@@ -796,8 +859,17 @@ router.post('/search', async ( request, response ) => {
         }
     }
 
+    const { cookies } = request
+    const data = {
+        ...state.getState(), 
+        login: 'session_id' in cookies || false, 
+        userLogged: 'session_id' in cookies ? 
+            JSON.parse( cookies.session_id ).userLogged : null,
+            search: form.busqueda
+    }
+
     // renderiza la vista de resultados
-    response.render('search', { ...state.getState(), search: form.busqueda })
+    response.render('search', data )
 
     state.clearState()
 })

@@ -29,7 +29,7 @@ function startServer( port = 8080 ) {
        .use( session({ 
             secret: 'API_KEY_SECRET', 
             saveUninitialized: false,  // salva la cookie cuando hay un cambio en la variable session 
-            resave: false ,
+            resave: false,
             cookie: {
                 maxAge: 1000 * 60 * 60 * 24
             }
