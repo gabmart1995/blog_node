@@ -1,23 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { 
-    insertUser, 
-    loginUser, 
-    getCategories, 
-    getLastEntries, 
-    insertCategory, 
-    createEntries, 
-    updateUser,
-    getAllEntries,
-    getEntriesByCategory,
-    getCategory,
-    getEntry,
-    deleteEntry,
-    updateEntries,
-    searchEntries,
-    createSesion,
-    deleteSesion
-} = require('../helpers/helpers')
+const helpers = require('../helpers/helpers')
 
 const state = require('../state/state')
 const hbs = require('hbs')
@@ -37,10 +20,10 @@ router.get('/', async ( request, response ) => {
 
     try {
 
-        const categories = await getCategories()
+        const categories = await helpers.getCategories()
         state.dispatch( state.getCategoriesAction( categories ) )
         
-        const lastEntries = await getLastEntries()
+        const lastEntries = await helpers.getLastEntries()
         state.dispatch( state.getLastEntriesAction( lastEntries ) )
 
     } catch ( error ) {
@@ -52,12 +35,15 @@ router.get('/', async ( request, response ) => {
         
     } finally {
         
+        const { cookies } = request
+
         // console.log( state.getState() )
+        
         response.render('index', { 
             ...state.getState(), 
-            login: 'session_id' in request.cookies || false, 
-            userLogged: 'session_id' in request.cookies ? 
-                JSON.parse( request.cookies.session_id ).userLogged : null
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null
         })
 
         // limpia el estado despues de renderizar la vista
@@ -79,7 +65,7 @@ router.get('/logout', async ( request, response ) => {
 
     try {
 
-        await deleteSesion({ session_id: request.session.id })
+        await helpers.deleteSesion({ session_id: request.session.id })
 
         request.session.isAuth = false
 
@@ -140,7 +126,7 @@ router.post('/register', async ( request, response ) => {
         
         try {
                 
-            await insertUser( form );
+            await helpers.insertUser( form );
 
             state.dispatch( state.registerAction( true ) )
             
@@ -170,7 +156,7 @@ router.post('/register', async ( request, response ) => {
 router.get('/profile', [ loggedMiddleware ], async ( request, response ) => {
 
     try {
-        const categories = await getCategories()  
+        const categories = await helpers.getCategories()  
         state.dispatch( state.getCategoriesAction( categories ) )      
     
     } catch ( error ) {
@@ -179,7 +165,16 @@ router.get('/profile', [ loggedMiddleware ], async ( request, response ) => {
         console.log( error )
     
     } finally {
-        response.render('profile', state.getState())
+        
+        const { cookies } = request
+
+        response.render('profile', { 
+            ...state.getState(),
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null
+        })
+        
         state.clearState()
     }
 })
@@ -225,7 +220,7 @@ router.post('/update-profile', async ( request, response ) => {
         
         try {
             
-            await updateUser({ ...form, id: userLogged.id })
+            await helpers.updateUser({ ...form, id: userLogged.id })
             
             // eliminamos la cookie y le pedimos al usuario que se authentique
             // para registrar nuevamente la session
@@ -279,14 +274,13 @@ router.post('/login', async ( request, response ) => {
         
         try {
             
-            const userLogged = await loginUser( form )
+            const userLogged = await helpers.loginUser( form )
             const TIME_EXPIRED_SESSION = ( 1000 * 60 * 60 * 24 ) 
 
-            
             request.session.isAuth = true
 
             // registramos en la bd la session del usuario
-            await createSesion({
+            await helpers.createSesion({
                 session_id: request.session.id,
                 expires: Date.now() + TIME_EXPIRED_SESSION,
                 data: ''
@@ -332,7 +326,7 @@ router.get('/create-category', [ loggedMiddleware ], async ( request, response )
 
     try {
         
-        const categories = await getCategories()   
+        const categories = await helpers.getCategories()   
         state.dispatch( state.getCategoriesAction( categories ) )
     
     } catch (error) {
@@ -341,8 +335,16 @@ router.get('/create-category', [ loggedMiddleware ], async ( request, response )
         state.dispatch( state.getCategoriesAction( null ) )
 
     } finally {
+
+        const { cookies } = request
         
-        response.render('create-category', state.getState() )
+        response.render('create-category', {
+            ...state.getState(),
+            login: 'session_id' in cookies || false, 
+            userLogged: 'session_id' in cookies ? 
+                JSON.parse( cookies.session_id ).userLogged : null
+        })
+
         state.clearState()
     }
 })
@@ -374,7 +376,7 @@ router.post('/save-category', async ( request, response ) => {
         
         try {
             
-            await insertCategory( form )
+            await helpers.insertCategory( form )
             
             state.dispatch( state.registerAction( true ) )
 
@@ -409,9 +411,9 @@ router.get('/category', async ( request, response ) => {
 
     try {
         
-        const categories = await getCategories()
-        const category = await getCategory( Number( id ) )
-
+        // busca la cateogria
+        const category = await helpers.getCategory( Number( id ) )
+        
         // si no halla la categoria redirecciona al index
         if ( !category ) {
             response.redirect('/')
@@ -419,26 +421,14 @@ router.get('/category', async ( request, response ) => {
         }
         
         // entradas por categoria
-        const entries = await getEntriesByCategory( id )
+        const categories = await helpers.getCategories()
+        const entries = await helpers.getEntriesByCategory( id )
         
         // console.log({ category, entries })
         
         state.dispatch( state.getCategoriesAction( categories ) )
         state.dispatch( state.setCategoryAction( category ) )
         state.dispatch( state.getEntriesByCategoryAction( entries ) )
-
-        const { cookies } = request
-        
-        const data = {
-            ...state.getState(), 
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null,
-        }
-
-        response.render('category', data )
-        
-        state.clearState()
 
     } catch ( error ) {
 
@@ -448,6 +438,9 @@ router.get('/category', async ( request, response ) => {
         state.dispatch( state.setCategoryAction( null ) )
         state.dispatch( state.getEntriesByCategoryAction([]) )
         
+        
+    } finally {
+
         const { cookies } = request
         
         const data = {
@@ -460,7 +453,7 @@ router.get('/category', async ( request, response ) => {
         response.render('category', data )
 
         state.clearState()
-    } 
+    }
 })
 
 // entries
@@ -468,7 +461,7 @@ router.get('/create-entries', [ loggedMiddleware ], async ( request, response ) 
 
     try {
 
-        const categories = await getCategories()
+        const categories = await helpers.getCategories()
         state.dispatch( state.getCategoriesAction( categories ) )
 
     } catch ( error ) {
@@ -478,9 +471,7 @@ router.get('/create-entries', [ loggedMiddleware ], async ( request, response ) 
 
     } finally {
 
-        // console.log( state.getState() )
-
-        
+        // console.log( state.getState() )        
         const { cookies } = request
         const data = {
             ...state.getState(), 
@@ -536,7 +527,7 @@ router.post('/save-entries', async ( request, response ) => {
             
             const { cookies } = request
 
-            await createEntries({ 
+            await helpers.createEntries({ 
                 titulo: form.titulo.trim(),
                 descripcion: form.descripcion.trim(),
                 usuario_id: JSON.parse( cookies.session_id ).userLogged.id,
@@ -570,8 +561,8 @@ router.post('/save-entries', async ( request, response ) => {
 router.get('/entries', async ( request, response ) => {
     
     try {
-        const entries = await getAllEntries()
-        const categories = await getCategories()
+        const entries = await helpers.getAllEntries()
+        const categories = await helpers.getCategories()
 
         // console.log( entries )
 
@@ -591,8 +582,10 @@ router.get('/entries', async ( request, response ) => {
 
 router.get('/entry', async ( request, response ) => {
 
-    let isAuthor = false  // flag autor del post
     const { id } = request.query
+    const { cookies } = request
+
+    let isAuthor = false  // flag autor del post
 
     if ( !regex.onlyNumbers.test( id ) ) {
         response.redirect('/')
@@ -601,11 +594,11 @@ router.get('/entry', async ( request, response ) => {
 
     try {
 
-        const categories = await getCategories()
-        const entry = await getEntry( Number( id ) )
+        const categories = await helpers.getCategories()
+        const entry = await helpers.getEntry( Number( id ) )
         
-        if ( 'session_id' in request.cookies ) {
-            isAuthor = entry.usuario_id === JSON.parse( request.cookies.session_id ).userLogged.id;
+        if ( 'session_id' in cookies ) {
+            isAuthor = entry.usuario_id === JSON.parse( cookies.session_id ).userLogged.id;
         }
 
         state.dispatch( state.getCategoriesAction( categories ) )
@@ -622,7 +615,6 @@ router.get('/entry', async ( request, response ) => {
     
     } finally {
 
-        const { cookies } = request
         const data = {
             ...state.getState(), 
             login: 'session_id' in cookies || false, 
@@ -640,8 +632,9 @@ router.get('/entry', async ( request, response ) => {
 router.get('/delete-entry', async ( request, response ) => {
     
     const { id } = request.query
+    const { cookies } = request
 
-    if ( !regex.onlyNumbers.test( id ) || !state.getState().login ) {
+    if ( !regex.onlyNumbers.test( id ) ) {
         
         response.redirect('/')
         
@@ -650,7 +643,7 @@ router.get('/delete-entry', async ( request, response ) => {
     
     try {
         
-        await deleteEntry( Number( id ), JSON.parse( request.cookies.session_id ).userLogged.id )
+        await helpers.deleteEntry( Number( id ), JSON.parse( cookies.session_id ).userLogged.id )
 
         state.dispatch( state.setDelete() )
         
@@ -663,7 +656,7 @@ router.get('/delete-entry', async ( request, response ) => {
 
         response.redirect('/')
         
-        state.clearState()
+        // state.clearState()
     }
 })
 
@@ -679,8 +672,8 @@ router.get('/edit-entry', [ loggedMiddleware ], async ( request, response ) => {
 
     try {
         
-        const categories = await getCategories()
-        const entry = await getEntry( Number( id ) )
+        const categories = await helpers.getCategories()
+        const entry = await helpers.getEntry( Number( id ) )
 
         // helper component
         hbs.registerHelper('select-category', () => {
@@ -770,7 +763,7 @@ router.post('/update-entries', async ( request, response ) => {
             
             // console.log('usuario: ' + JSON.parse( request.cookies.session_id ).userLogged.id )
 
-            await updateEntries({ 
+            await helpers.updateEntries({ 
                 ...form, 
                 categoria: Number( form.categoria ), 
                 id: Number( id ), 
@@ -821,8 +814,8 @@ router.post('/search', async ( request, response ) => {
 
         try {
             
-            const entries = await searchEntries({ search: '%' + form.busqueda + '%' })
-            const categories = await getCategories()
+            const entries = await helpers.searchEntries({ search: '%' + form.busqueda + '%' })
+            const categories = await helpers.getCategories()
 
             // console.log( entries )
 
@@ -863,7 +856,7 @@ router.all('*', async ( request, response ) => {
 
     try {
         
-        const categories = await getCategories()
+        const categories = await helpers.getCategories()
 
         state.dispatch( state.getCategoriesAction( categories ) )
 
