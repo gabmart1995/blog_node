@@ -18,7 +18,7 @@
     <form action="/save-entries" method="POST">
         
         <label for="titulo">Titulo:</label>
-        <input type="text" name="titulo" id="titulo">
+        <input type="text" name="titulo" id="titulo" required maxlength="25" pattern="^[\w\s]{1,25}$" />
         {{#if errorsEntries }}
             {{#if errorsEntries.titulo }}
                 <div class="alerta alerta-error">{{ errorsEntries.titulo }}</div>
@@ -26,7 +26,7 @@
         {{/if}}
 
         <label for="descripcion">Descripcion:</label>
-        <textarea name="descripcion" id="descipcion"></textarea>
+        <textarea name="descripcion" id="descipcion" required maxlength="1000"></textarea>
         {{#if errorsEntries }}
             {{#if errorsEntries.descripcion }}
                 <div class="alerta alerta-error">{{ errorsEntries.descripcion }}</div>
@@ -50,7 +50,8 @@
             {{/if}}
         {{/if}}
 
-        <input type="submit" value="Guardar">
+        <input type="submit" value="Guardar" disabled />
     </form>
+    <script src="js/entry-validator.js"></script>
 </div>
 {{> footer }}
