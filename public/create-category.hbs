@@ -10,14 +10,15 @@
     <form action="/save-category" method="POST">
         
         <label for="nombre_category">Nombre de la categoria:</label>
-        <input type="text" name="nombre" id="nombre_category">
+        <input type="text" name="nombre" id="nombre_category" required pattern="^[\w\s]{1,25}$" maxlength="25" />
         {{#if errorsCategory}}
             {{#if errorsCategory.nombre}}
                 <div class="alerta alerta-error">{{ errorsCategory.nombre }}</div>
             {{/if}}
         {{/if}}
 
-        <input type="submit" value="Guardar">
+        <input type="submit" value="Guardar" disabled />
     </form>
+    <script src="js/categories-validator.js"></script>
 </div>
 {{> footer }}

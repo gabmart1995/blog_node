@@ -3,150 +3,153 @@
  * Author: Gabriel Martinez
  */
 
-const [ searchForm, loginForm, registerForm ] = document.forms
-const [ inputSearch ] = searchForm
+// evitamos contaminar el objeto window
+( function() {
+    
+    const [ searchForm, loginForm, registerForm ] = document.forms
+    const [ inputSearch ] = searchForm
 
-inputSearch.addEventListener('input', ( $eventInput ) => {
+    inputSearch.addEventListener('input', ( $eventInput ) => {
+            
+        const input = $eventInput.target
+        const inputButton = searchForm[1]
+    
+        // console.log( inputButton )
+    
+        input.setCustomValidity('')
+    
+        // console.log( $eventInput.target.validity )
+    
+        if ( input.validity.patternMismatch ) {
+            input.setCustomValidity('El campo de busqueda es incorrecto')
+            input.reportValidity()      
+        }
+    
+        // cambiamos el disabled del boton
+        inputButton.disabled = !input.validity.valid 
+    })
+
+    if ( loginForm ) {
         
-    const input = $eventInput.target
-    const inputButton = searchForm[1]
-
-    // console.log( inputButton )
-
-    input.setCustomValidity('')
-
-    // console.log( $eventInput.target.validity )
-
-    if ( input.validity.patternMismatch ) {
-        input.setCustomValidity('El campo de busqueda es incorrecto')
-        input.reportValidity()      
+        const [ inputEmail, inputPassword, loginButton ] = loginForm
+        
+        // events inputs
+        inputPassword.addEventListener('input', ( $eventInput ) => {
+            
+            const input = $eventInput.target
+    
+            input.setCustomValidity('')
+    
+            // console.log( $eventInput.target.validity.valid )
+    
+            if ( input.validity.tooShort ) {
+                input.setCustomValidity('Minimo 8 caracteres')
+                input.reportValidity()      
+            }
+            
+            // cambiamos el disabled del boton
+            loginButton.disabled = !( input.validity.valid && inputEmail.validity.valid )
+        })
+    
+        inputEmail.addEventListener('input', ( $eventInput ) => {
+            
+            const input = $eventInput.target
+            
+            input.setCustomValidity('')
+    
+            // console.log( $eventInput.target.validity.valid )
+    
+            if ( !input.validity.valid ) {
+                input.setCustomValidity('El campo del correo electronico es incorrecto')
+                input.reportValidity()      
+            }
+            
+            // cambiamos el disabled del boton
+            loginButton.disabled = !( input.validity.valid && inputPassword.validity.valid )
+        })
     }
 
-    // cambiamos el disabled del boton
-    inputButton.disabled = !input.validity.valid 
-})
-
-
-if ( loginForm ) {
+    if ( registerForm ) {
     
-    const [ inputEmail, inputPassword, loginButton ] = loginForm
+        const [ inputName, inputSurname, inputEmail, inputPassword, registerButton ] = registerForm
     
-    // events inputs
-    inputPassword.addEventListener('input', ( $eventInput ) => {
+        const isValid = () => ( 
+            inputEmail.validity.valid && 
+            inputName.validity.valid &&
+            inputSurname.validity.valid && 
+            inputPassword.validity.valid
+        )
         
-        const input = $eventInput.target
-
-        input.setCustomValidity('')
-
-        // console.log( $eventInput.target.validity.valid )
-
-        if ( input.validity.tooShort ) {
-            input.setCustomValidity('Minimo 8 caracteres')
-            input.reportValidity()      
-        }
-        
-        // cambiamos el disabled del boton
-        loginButton.disabled = !( input.validity.valid && inputEmail.validity.valid )
-    })
-
-    inputEmail.addEventListener('input', ( $eventInput ) => {
-        
-        const input = $eventInput.target
-        
-        input.setCustomValidity('')
-
-        // console.log( $eventInput.target.validity.valid )
-
-        if ( !input.validity.valid ) {
-            input.setCustomValidity('El campo del correo electronico es incorrecto')
-            input.reportValidity()      
-        }
-        
-        // cambiamos el disabled del boton
-        loginButton.disabled = !( input.validity.valid && inputPassword.validity.valid )
-    })
-}
-
-if ( registerForm ) {
-
-    const [ inputName, inputSurname, inputEmail, inputPassword, registerButton ] = registerForm
-
-    const isValid = () => ( 
-        inputEmail.validity.valid && 
-        inputName.validity.valid &&
-        inputSurname.validity.valid && 
-        inputPassword.validity.valid
-    )
+        inputEmail.addEventListener('input', ( $eventInput ) => {
+            
+            const input = $eventInput.target
+            
+            input.setCustomValidity('')
     
-    inputEmail.addEventListener('input', ( $eventInput ) => {
+            // console.log( $eventInput.target.validity.valid )
+    
+            if ( !input.validity.valid ) {
+                input.setCustomValidity('El campo del correo electronico es incorrecto')
+                input.reportValidity()      
+            }
+            
+            // cambiamos el disabled del boton
+            registerButton.disabled = !isValid()
+        })
+    
+        inputPassword.addEventListener('input', ( $eventInput ) => {
+            
+            const input = $eventInput.target
+    
+            input.setCustomValidity('')
+    
+            // console.log( $eventInput.target.validity.valid )
+    
+            if ( input.validity.tooShort ) {
+                input.setCustomValidity('Minimo 8 caracteres')
+                input.reportValidity()      
+            }
+            
+            // cambiamos el disabled del boton
+            registerButton.disabled = !isValid()
+        })
+    
+        inputName.addEventListener('input', ( $eventInput ) => {
+            
+            const input = $eventInput.target
         
-        const input = $eventInput.target
+            // console.log( inputButton )
         
-        input.setCustomValidity('')
-
-        // console.log( $eventInput.target.validity.valid )
-
-        if ( !input.validity.valid ) {
-            input.setCustomValidity('El campo del correo electronico es incorrecto')
-            input.reportValidity()      
-        }
+            input.setCustomValidity('')
         
-        // cambiamos el disabled del boton
-        registerButton.disabled = !isValid()
-    })
-
-    inputPassword.addEventListener('input', ( $eventInput ) => {
+            // console.log( $eventInput.target.validity )
         
-        const input = $eventInput.target
-
-        input.setCustomValidity('')
-
-        // console.log( $eventInput.target.validity.valid )
-
-        if ( input.validity.tooShort ) {
-            input.setCustomValidity('Minimo 8 caracteres')
-            input.reportValidity()      
-        }
+            if ( input.validity.patternMismatch ) {
+                input.setCustomValidity('El campo nombre es incorrecto')
+                input.reportValidity()      
+            }
         
-        // cambiamos el disabled del boton
-        registerButton.disabled = !isValid()
-    })
-
-    inputName.addEventListener('input', ( $eventInput ) => {
+            // cambiamos el disabled del boton
+            registerButton.disabled = !isValid() 
+        })
+    
+        inputSurname.addEventListener('input', ( $eventInput ) => {
+            
+            const input = $eventInput.target
         
-        const input = $eventInput.target
-    
-        // console.log( inputButton )
-    
-        input.setCustomValidity('')
-    
-        // console.log( $eventInput.target.validity )
-    
-        if ( input.validity.patternMismatch ) {
-            input.setCustomValidity('El campo nombre es incorrecto')
-            input.reportValidity()      
-        }
-    
-        // cambiamos el disabled del boton
-        registerButton.disabled = !isValid() 
-    })
-
-    inputSurname.addEventListener('input', ( $eventInput ) => {
+            // console.log( inputButton )
         
-        const input = $eventInput.target
-    
-        // console.log( inputButton )
-    
-        input.setCustomValidity('')
-    
-        // console.log( $eventInput.target.validity )
-    
-        if ( input.validity.patternMismatch ) {
-            input.setCustomValidity('El campo apellido es incorrecto')
-            input.reportValidity()      
-        }
-    
-        // cambiamos el disabled del boton
-        registerButton.disabled = !isValid() 
-    })
-}
+            input.setCustomValidity('')
+        
+            // console.log( $eventInput.target.validity )
+        
+            if ( input.validity.patternMismatch ) {
+                input.setCustomValidity('El campo apellido es incorrecto')
+                input.reportValidity()      
+            }
+        
+            // cambiamos el disabled del boton
+            registerButton.disabled = !isValid() 
+        })
+    }
+})()
