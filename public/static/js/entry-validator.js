@@ -8,8 +8,8 @@ const [ inputTitle, inputDescription, selectCategory, inputButton ] = entryForm
 
 const isValid = () => (
     inputTitle.validity.valid &&
-    inputDescription.validity.valid &&
-    selectCategory.validity.valid
+    (/^[\w\s]{1,1000}$/).test( inputDescription.value ) &&
+    selectCategory.value.length > 0
 )
 
 inputTitle.addEventListener('input', ( $eventInput ) => {
@@ -17,6 +17,8 @@ inputTitle.addEventListener('input', ( $eventInput ) => {
     const input = $eventInput.target
 
     input.setCustomValidity('')
+
+    // console.log(input.value)
 
     if ( input.validity.patternMismatch ) {
         input.setCustomValidity('El campo de titulo es incorrecto')
@@ -30,13 +32,29 @@ inputDescription.addEventListener('input', ( $eventInput ) => {
         
     const input = $eventInput.target
 
-    console.log( input.validity )
+    // console.log( input.validity )
 
     input.setCustomValidity('')
 
-    if ( input.validity.patternMismatch ) {
+    const valid = (/^[\w\s]{1,1000}$/).test( input.value )
+
+    if ( !valid ) {
         input.setCustomValidity('El campo de descripcion es incorrecto')
         input.reportValidity()      
+    }
+
+    inputButton.disabled = !isValid()
+})
+
+selectCategory.addEventListener('change', ( $eventSelect ) => {
+    
+    const select = $eventSelect.target
+    
+    select.setCustomValidity('')
+
+    if ( select.value.length === 0 ) {
+        select.setCustomValidity('Selecciona una categoria del listado')
+        select.reportValidity()
     }
 
     inputButton.disabled = !isValid()

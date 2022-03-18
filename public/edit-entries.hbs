@@ -21,11 +21,10 @@
             {{/if}}
         {{/if}}
 
-
         <form action="/update-entries?id={{ entry.id }}" method="POST">
             
             <label for="titulo">Titulo:</label>
-            <input type="text" value="{{ entry.titulo }}" name="titulo" id="titulo" >
+            <input type="text" value="{{ entry.titulo }}" name="titulo" id="titulo" required maxlength="25" pattern="^[\w\s]{1,25}$" />
             {{#if errorsEntries }}
                 {{#if errorsEntries.titulo }}
                     <div class="alerta alerta-error">{{ errorsEntries.titulo }}</div>
@@ -33,7 +32,7 @@
             {{/if}}
 
             <label for="descripcion">Descripcion:</label>
-            <textarea name="descripcion" id="descipcion">{{ entry.descripcion }}</textarea>
+            <textarea name="descripcion" id="descipcion" required maxlength="1000">{{ entry.descripcion }}</textarea>
             {{#if errorsEntries }}
                 {{#if errorsEntries.descripcion }}
                     <div class="alerta alerta-error">{{ errorsEntries.descripcion }}</div>
@@ -50,8 +49,10 @@
                 {{/if}}
             {{/if}}
 
-            <input type="submit" value="Guardar">
+            <input type="submit" value="Guardar" disabled />
         </form>
+        <!-- entry-validator -->
+        <script src="js/entry-validator.js"></script>
     {{/if }}
 </div>
 {{> footer }}
