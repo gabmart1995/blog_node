@@ -59,6 +59,11 @@
             input.setCustomValidity('El campo nombre es incorrecto')
             input.reportValidity()      
         }
+
+        if ( input.value.length === 0 ) {
+            input.setCustomValidity('campo requerido')
+            input.reportValidity()
+        }
     
         // cambiamos el disabled del boton
         inputButton.disabled = !isValid() 
@@ -77,6 +82,11 @@
         if ( input.validity.patternMismatch ) {
             input.setCustomValidity('El campo apellido es incorrecto')
             input.reportValidity()      
+        }
+
+        if ( input.value.length === 0 ) {
+            input.setCustomValidity('campo requerido')
+            input.reportValidity()
         }
     
         // cambiamos el disabled del boton

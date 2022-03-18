@@ -24,6 +24,11 @@
             input.setCustomValidity('El campo de busqueda es incorrecto')
             input.reportValidity()      
         }
+
+        if ( input.value.length === 0 ) {
+            input.setCustomValidity('campo requerido')
+            input.reportValidity()
+        }
     
         // cambiamos el disabled del boton
         inputButton.disabled = !input.validity.valid 
@@ -45,6 +50,11 @@
             if ( input.validity.tooShort ) {
                 input.setCustomValidity('Minimo 8 caracteres')
                 input.reportValidity()      
+            }
+
+            if ( input.value.length === 0 ) {
+                input.setCustomValidity('campo requerido')
+                input.reportValidity()
             }
             
             // cambiamos el disabled del boton
@@ -109,6 +119,11 @@
                 input.setCustomValidity('Minimo 8 caracteres')
                 input.reportValidity()      
             }
+
+            if ( input.value.length === 0 ) {
+                input.setCustomValidity('campo requerido')
+                input.reportValidity()
+            }
             
             // cambiamos el disabled del boton
             registerButton.disabled = !isValid()
@@ -128,6 +143,11 @@
                 input.setCustomValidity('El campo nombre es incorrecto')
                 input.reportValidity()      
             }
+
+            if ( input.value.length === 0 ) {
+                input.setCustomValidity('campo requerido')
+                input.reportValidity()
+            }
         
             // cambiamos el disabled del boton
             registerButton.disabled = !isValid() 
@@ -146,6 +166,11 @@
             if ( input.validity.patternMismatch ) {
                 input.setCustomValidity('El campo apellido es incorrecto')
                 input.reportValidity()      
+            }
+
+            if ( input.value.length === 0 ) {
+                input.setCustomValidity('campo requerido')
+                input.reportValidity()
             }
         
             // cambiamos el disabled del boton

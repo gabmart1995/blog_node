@@ -25,6 +25,11 @@
             input.setCustomValidity('El campo de titulo es incorrecto')
             input.reportValidity()      
         }
+
+        if ( input.value.length === 0 ) {
+            input.setCustomValidity('campo requerido')
+            input.reportValidity()
+        }
     
         inputButton.disabled = !isValid()
     })
