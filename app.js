@@ -8,6 +8,7 @@ const session = require('express-session')
 
 const { connectDatabase, closeConnection } = require('./database/database')
 const cookieParser = require('cookie-parser')
+const { logsMiddleware } = require('./middleware/middleware')
 
 function startServer( port = 8080 ) {
     
@@ -37,6 +38,7 @@ function startServer( port = 8080 ) {
         .use( express.static('public/static') )
         .use( express.urlencoded({ extended: true }) )
         .use( cookieParser() )
+        .use( logsMiddleware )
         .use( router )
 
 

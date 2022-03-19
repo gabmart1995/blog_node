@@ -14,7 +14,7 @@ const regex = Object.freeze({
 })
 
 // index
-router.get('/', async ( request, response ) => {
+router.get('/', async ( request, response, next ) => {
 
     // console.log( 'session_id' in request.cookies )
 
@@ -46,9 +46,11 @@ router.get('/', async ( request, response ) => {
                 JSON.parse( cookies.session_id ).userLogged : null
         })
 
+
         // limpia el estado despues de renderizar la vista
         // para la limpieza de los formularios
         state.clearState()
+
     }
 })
 
