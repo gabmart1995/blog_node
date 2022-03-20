@@ -1,6 +1,5 @@
-<!-- header -->
-{{> header }}    
-{{> sidebar }}
+<%- include('partials/header', { categories }) %>
+<%- include('partials/sidebar', { login, errorsLogin, register, errorsRegister })  %> 
 <div id="principal">
     <h1>Crear categoria</h1>
     <p>
@@ -11,14 +10,11 @@
         
         <label for="nombre_category">Nombre de la categoria:</label>
         <input type="text" name="nombre" id="nombre_category" required pattern="^[\w\s]{1,25}$" maxlength="25" />
-        {{#if errorsCategory}}
-            {{#if errorsCategory.nombre}}
-                <div class="alerta alerta-error">{{ errorsCategory.nombre }}</div>
-            {{/if}}
-        {{/if}}
-
+        <% if (errorsCategory && errorsCategory.nombre) { %>
+            <div class="alerta alerta-error"><%= errorsCategory.nombre %></div>
+        <% } %>
         <input type="submit" value="Guardar" disabled />
     </form>
     <script src="js/categories-validator.js"></script>
 </div>
-{{> footer }}
+<%- include('partials/footer', { year }) %>

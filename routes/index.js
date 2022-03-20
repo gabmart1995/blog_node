@@ -3,7 +3,6 @@ const router = express.Router()
 const helpers = require('../helpers/helpers')
 
 const state = require('../state/state')
-const hbs = require('hbs')
 const { loggedMiddleware } = require('../middleware/middleware')
 
 const regex = Object.freeze({
@@ -674,26 +673,14 @@ router.get('/edit-entry', [ loggedMiddleware ], async ( request, response ) => {
 
     try {
         
-        const categories = await helpers.getCategories()
         const entry = await helpers.getEntry( Number( id ) )
-
-        // helper component
-        hbs.registerHelper('select-category', () => {
-            return (`
-                <select name="categoria">
-                    <option value="">Seleccione</option>
-                    ${ categories.map( category => (`
-                            <option 
-                                value="${ category.id }" 
-                                ${ category.id === entry.categoria_id ? 'selected' : '' }
-                            >
-                                ${ category.nombre }
-                            </option>
-                        `)).join('') 
-                    }
-                </select>
-            `)
-        })
+        
+        if ( !entry ) {
+            response.redirect('/')
+            return
+        }
+        
+        const categories = await helpers.getCategories()
 
         state.dispatch( state.setEntryAction( entry ) )
         state.dispatch( state.getCategoriesAction( categories ) )
@@ -705,19 +692,18 @@ router.get('/edit-entry', [ loggedMiddleware ], async ( request, response ) => {
         state.dispatch( state.setEntryAction( null ) )
         state.dispatch( state.getCategoriesAction([]) )
 
-    } finally {
-
-        const { cookies } = request
-        const data = {
-            ...state.getState(), 
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null,
-        }
-
-        response.render('edit-entries', data )
-        state.clearState()
+    } 
+    
+    const { cookies } = request
+    const data = {
+        ...state.getState(), 
+        login: 'session_id' in cookies || false, 
+        userLogged: 'session_id' in cookies ? 
+            JSON.parse( cookies.session_id ).userLogged : null,
     }
+
+    response.render('edit-entries', data )
+    state.clearState()
 })
 
 router.post('/update-entries', async ( request, response ) => {

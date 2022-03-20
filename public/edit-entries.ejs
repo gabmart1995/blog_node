@@ -1,0 +1,60 @@
+<%- include('partials/header', { categories }) %>
+<%- include('partials/sidebar', { login, errorsLogin, register, errorsRegister })  %> 
+<div id="principal">
+
+    <h1>Editar entrada</h1>
+    <p>
+        Edita tu entrada: <b><%= entry.titulo %></b>
+    </p><br />
+
+    <% if (update) { %>
+        <div class="alerta alerta-exito">La entrada se actualizó con exito</div>
+    <% } %>
+
+    <% if (errorsEntries && errorsEntries.general) { %>
+        <div class="alerta alerta-error"><%= errorsEntries.general %></div>
+    <% } %>
+
+    <form action="/update-entries?id=<%= entry.id %>" method="POST">
+        
+        <label for="titulo">Titulo:</label>
+        <input type="text" value="<%= entry.titulo %>" name="titulo" id="titulo" required maxlength="25" pattern="^[\w\s]{1,25}$" />
+        <% if (errorsEntries && errorsEntries.titulo) { %>
+            <div class="alerta alerta-error"><%= errorsEntries.titulo %></div>
+        <% } %>
+
+        <label for="descripcion">Descripcion:</label>
+        <textarea name="descripcion" id="descipcion" required maxlength="1000"><%= entry.descripcion %></textarea>
+        <% if (errorsEntries && errorsEntries.descipcion) { %>
+            <div class="alerta alerta-error"><%= errorsEntries.descipcion %></div>
+        <% } %>
+
+        <label for="categoria">Categoria</label>
+        
+        <!-- select categories -->
+        <select name="categoria">
+
+            <option value="">Seleccione</option>
+            <% if (categories) { %>
+                <% categories.forEach( category => { %>
+                    <option 
+                        value="<%= category.id %>" 
+                        <%= category.id === entry.categoria_id ? 'selected' : '' %> 
+                    >
+                        <%= category.nombre %>
+                    </option>
+                 
+                <% }) %>
+            <% } %>
+
+        </select>
+        <% if (errorsEntries && errorsEntries.categoria) { %>
+            <div class="alerta alerta-error"><%= errorsEntries.categoria %></div>
+        <% } %>
+
+        <input type="submit" value="Guardar" />
+    </form>
+    <!-- entry-validator -->
+    <script src="js/entry-validator.js"></script>
+</div>
+<%- include('partials/footer', { year }) %>

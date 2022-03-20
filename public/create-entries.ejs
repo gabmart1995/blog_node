@@ -1,5 +1,6 @@
 <%- include('partials/header', { categories }) %>
 <%- include('partials/sidebar', { login, errorsLogin, register, errorsRegister })  %> 
+
 <div id="principal">
     <h1>Crear entradas</h1>
     <p>
@@ -28,11 +29,13 @@
         <label for="categoria">Categoria</label>
         <select name="categoria">
             <option value="">Seleccione</option>
+            
             <% if (categories) { %>
                 <% categories.forEach( category => { %>
                     <option value="<%= category.id %>"><%= category.nombre %></option>
                 <% }) %>
             <% } %>
+
         </select>    
         <% if (errorsEntries && errorsEntries.categoria) { %>
             <div class="alerta alerta-error"><%= errorsEntries.categoria %></div>
@@ -40,7 +43,9 @@
 
         <input type="submit" value="Guardar" disabled />
     </form>
+
     <!-- entry-validator -->
     <script src="js/entry-validator.js"></script>
 </div>
+
 <%- include('partials/footer', { year }) %>

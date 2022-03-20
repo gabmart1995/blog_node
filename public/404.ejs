@@ -1,11 +1,10 @@
-<!-- header -->
-{{> header }}    
-{{> sidebar }}
+<%- include('partials/header', { categories }) %>
+<%- include('partials/sidebar', { login, errorsLogin, register, errorsRegister })  %> 
     <!-- Caja principal -->
     <div id="principal">
         <h1 style="padding-bottom: 20px;">No encontrado</h1>
         <h4 style="padding-bottom: 20px;">Vaya, el contenido que esta buscando no fue encontrado</h4>
         <a href="/" class="boton">Volver</a>
     </div>
-        
-{{> footer }}
+
+<%- include('partials/footer', { year }) %>
