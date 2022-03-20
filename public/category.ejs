@@ -1,0 +1,26 @@
+<%- include('partials/header', { categories }) %>
+<%- include('partials/sidebar', { login, errorsLogin, register, errorsRegister })  %> 
+
+    <!-- Caja principal -->
+    <div id="principal">
+        <h1>Entradas de <%= category.nombre %></h1>
+
+        <% if (entries) { %>
+            <% entries.forEach( entry => { %>
+                <article class="entrada">
+                    <a href="/entry?id=<%= entry.id %>">
+                        <h2><%= entry.titulo %></h2>
+                        <span class="fecha"><%= entry.categoria %> | <%= entry.fecha %></span>
+                        <p><%= entry.descripcion %></p>
+                    </a>
+                </article>
+            <% }) %>
+        <% } else { %>
+            <article class="entrada" style="padding-top: 20px;">
+                <p style="text-align: center;">No hay entradas disponibles</p>    
+            </article>
+        <% } %>
+        
+    </div>
+
+<%- include('partials/footer', { year }) %>

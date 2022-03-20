@@ -3,7 +3,7 @@
 const EventEmitter = require('events')
 const path = require('path')
 const express = require('express')
-const hbs = require('hbs')
+// const hbs = require('hbs')
 const session = require('express-session')
 
 const { connectDatabase, closeConnection } = require('./database/database')
@@ -19,10 +19,10 @@ function startServer( port = 8080 ) {
     
     const databaseEmitter = new DatabaseEmitter()
 
-    hbs.registerPartials( path.join( __dirname, 'public/partials' ))
+    // hbs.registerPartials( path.join( __dirname, 'public/partials' ))
 
     // hbs
-    app.set('view engine', 'hbs')
+    app.set('view engine', 'ejs')
     app.set('views', 'public')
 
     // servir contenido estatico

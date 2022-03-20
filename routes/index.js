@@ -14,7 +14,7 @@ const regex = Object.freeze({
 })
 
 // index
-router.get('/', async ( request, response, next ) => {
+router.get('/', async ( request, response ) => {
 
     // console.log( 'session_id' in request.cookies )
 

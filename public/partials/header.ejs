@@ -20,15 +20,13 @@
                 <li>
                     <a href="/">Inicio</a>
                 </li>
-
-                {{#if categories }}
-                    {{#each categories as | category | }}
+                <% if ( categories ) { %>
+                    <% categories.forEach(( category ) => { %>
                         <li>
-                            <a href="/category?id={{ category.id }}">{{ category.nombre }}</a>
+                            <a href="/category?id=<%= category.id %>"><%= category.nombre  %></a>
                         </li>
-                    {{/each}}        
-                {{/if}}
-                
+                    <% }) %>
+                <% } %>
                 <li>
                     <a href="#" id="about">Sobre mi</a>
                 </li>

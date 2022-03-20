@@ -1,0 +1,17 @@
+<%- include('partials/header', { categories }) %>
+<%- include('partials/sidebar', { login, errorsLogin, register, errorsRegister })  %> 
+    <!-- Caja principal -->
+    <div id="principal">
+        <h1><%= entry.titulo %></h1>
+        <a href="/category?id=<%= entry.categoria_id %>">
+            <h2><%= entry.categoria %></h2>
+        </a>
+        <h4 class="fecha"><%= entry.fecha %> | <%= entry.usuario %></h4>
+        <p class="justify"><%= entry.descripcion %></p>
+
+        <% if (isAuthor) { %>
+            <a href="/edit-entry?id=<%= entry.id %>" class="boton boton-verde">Editar entrada</a>
+            <a href="/delete-entry?id=<%= entry.id %>" class="boton boton">Eliminar entrada</a>
+        <% } %>
+    </div>
+<%- include('partials/footer', { year }) %>
