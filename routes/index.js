@@ -7,7 +7,7 @@ const { loggedMiddleware } = require('../middleware/middleware')
 
 const regex = Object.freeze({
     string: (/^[A-Za-z\s]{1,25}$/),
-    descriptionString: (/^[A-Za-z0-9\.\,\s]{1,1000}$/),
+    descriptionString: (/^[\w\.\,\s]{1,1000}$/),
     emailString: (/^[a-z0-9]+@[a-z]{4,}\.[a-z]{3,}$/),
     onlyNumbers: (/^[0-9]+$/) 
 })

@@ -274,3 +274,14 @@ input[type="submit"]:disabled {
     padding: 15px;
     text-align: center;
 }
+
+textarea[name="descripcion"] {
+	width: calc(97% - 4px);
+	height: 250px;
+}
+
+select[name="categoria"] {
+	width: calc(97% - 4px);
+	padding-top: 5px;
+	padding-bottom: 5px;
+}

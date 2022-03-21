@@ -9,7 +9,7 @@
     
     const isValid = () => (
         inputTitle.validity.valid &&
-        (/^[\w\s]{1,1000}$/).test( inputDescription.value ) &&
+        (/^[\w\s\.\,]{1,1000}$/).test( inputDescription.value ) &&
         selectCategory.value.length > 0
     )
     
@@ -42,7 +42,7 @@
     
         input.setCustomValidity('')
     
-        const valid = (/^[\w\s]{1,1000}$/).test( input.value )
+        const valid = (/^[\w\s\.\,]{1,1000}$/).test( input.value )
     
         if ( !valid ) {
             input.setCustomValidity('El campo de descripcion es incorrecto')
