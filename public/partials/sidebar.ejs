@@ -33,18 +33,18 @@
                     <form action="/login" method="POST">
 
                         <label for="email-login">Email</label>
-                        <input type="email" name="email" id="email-login" />
+                        <input type="email" name="email" id="email-login" required />
                         <% if (errorsLogin && errorsLogin.email ) { %>
                             <div class="alerta alerta-error"><%= errorsLogin.email %></div>
                         <% } %>
                         
                         <label for="password-login">Password</label>
-                        <input type="password" name="password" />
+                        <input type="password" name="password" required minlength="8" />
                         <% if (errorsLogin && errorsLogin.password ) { %>
                             <div class="alerta alerta-error"><%= errorsLogin.password %></div>
                         <% } %>
 
-                        <input type="submit" value="Entrar"  />
+                        <input type="submit" value="Entrar" disabled />
                     </form>
                 </div>
             
@@ -64,35 +64,35 @@
                     <form action="/register" method="POST">
 
                         <label for="name">Nombre</label>
-                        <input type="text" name="name" id="name" minlength="2" />
+                        <input type="text" name="name" id="name" minlength="2" maxlength="25" required pattern="^[a-zA-Z]{1,25}$" />
                         <% if (errorsRegister && errorsRegister.name) { %>
                             <div class="alerta alerta-error"><%= errorsRegister.name %></div>
                         <% } %>
         
 
                         <label for="surname">Apellidos</label>
-                        <input type="text" name="surname" id="surname" />
+                        <input type="text" name="surname" id="surname" maxlength="25" required pattern="^[a-zA-Z]{1,25}$"  />
                         <% if (errorsRegister && errorsRegister.surname) { %>
                             <div class="alerta alerta-error"><%= errorsRegister.surname %></div>
                         <% } %>
 
                         <label for="email-register">Email</label>
-                        <input type="email" name="email" id="email-register" />
+                        <input type="email" name="email" id="email-register" required />
                         <% if (errorsRegister && errorsRegister.email) { %>
                             <div class="alerta alerta-error"><%= errorsRegister.email %></div>
                         <% } %>
 
                         <label for="password-register">Password</label>
-                        <input type="password" name="password" id="password-register" />
+                        <input type="password" name="password" id="password-register" required minlength="8" />
                         <% if (errorsRegister && errorsRegister.password) { %>
                             <div class="alerta alerta-error"><%= errorsRegister.password %></div>
                         <% } %>
                         
-                        <input type="submit" value="Registrar" />
+                        <input type="submit" value="Registrar" disabled />
                     </form>
                 </div>
             <% } %> 
 
         </aside>
         <!-- index validator -->
-        <!-- <script src="js/index-validator.js"></script> -->
+        <script src="js/index-validator.js"></script>

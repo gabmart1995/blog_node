@@ -274,28 +274,35 @@ router.post('/update-profile', async ( request, response ) => {
 // category
 router.get('/create-category', [ loggedMiddleware ], async ( request, response ) => {
 
+    let categories = []
+
     try {
         
-        const categories = await helpers.getCategories()   
-        state.dispatch( state.getCategoriesAction( categories ) )
+        categories = await helpers.getCategories()   
     
     } catch (error) {
         
         console.error( error )
-        state.dispatch( state.getCategoriesAction( null ) )
 
     } finally {
 
-        const { cookies } = request
+        const login = request.session.isAuth || false
+        const userLogged = request.session.userLogged || null
+        const [ register ] = request.flash('register')
+        const [ errorsLogin ] = request.flash('errorsLogin')
+        const [ errorsRegister ] = request.flash('errorsRegister')
+        const [ errorsCategory ] = request.flash('errorsCategory')
         
         response.render('create-category', {
-            ...state.getState(),
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null
+            year: new Date().getFullYear(),
+            categories,
+            register: register || false,
+            errorsRegister: errorsRegister || null,
+            login,
+            errorsLogin: errorsLogin || null,
+            userLogged,
+            errorsCategory: errorsCategory || null
         })
-
-        state.clearState()
     }
 })
 
@@ -313,12 +320,9 @@ router.post('/save-category', async ( request, response ) => {
 
         // console.log( errorsCategory )
 
-        state.dispatch( state.registerAction( false ) )
-        state.dispatch( 
-            state.errorsCategoryAction({
-                nombre: errorsCategory.get('nombre')
-            }) 
-        )
+        request.flash('errorsCategory', {
+            nombre: errorsCategory.get('nombre')
+        })
 
         response.redirect('/create-category')
 
@@ -328,22 +332,17 @@ router.post('/save-category', async ( request, response ) => {
             
             await helpers.insertCategory( form )
             
-            state.dispatch( state.registerAction( true ) )
+            request.flash('register', true)
 
             response.redirect('/')
 
         } catch ( error ) {
             
             // console.error( error )
-
-            state.dispatch( state.registerAction( false ) )
-            state.dispatch( 
-                state.errorsCategoryAction({
-                    nombre: errorsCategory.get('nombre'),
-                    general: error.message
-                }) 
-            )
-
+            request.flash('errorsCategory', {
+                general: error.message
+            })
+    
             response.redirect('/create-category')
         }
     }
@@ -353,6 +352,9 @@ router.post('/save-category', async ( request, response ) => {
 router.get('/category', async ( request, response ) => {
     
     const { id } = request.query 
+    let category = null
+    let categories = null
+    let entries = []
 
     if ( !regex.onlyNumbers.test( id ) ) {
         response.redirect('/')
@@ -362,7 +364,7 @@ router.get('/category', async ( request, response ) => {
     try {
         
         // busca la cateogria
-        const category = await helpers.getCategory( Number( id ) )
+        category = await helpers.getCategory( Number( id ) )
         
         // si no halla la categoria redirecciona al index
         if ( !category ) {
@@ -371,38 +373,36 @@ router.get('/category', async ( request, response ) => {
         }
         
         // entradas por categoria
-        const categories = await helpers.getCategories()
-        const entries = await helpers.getEntriesByCategory( id )
+        categories = await helpers.getCategories()
+        entries = await helpers.getEntriesByCategory( id )
         
         // console.log({ category, entries })
-        
-        state.dispatch( state.getCategoriesAction( categories ) )
-        state.dispatch( state.setCategoryAction( category ) )
-        state.dispatch( state.getEntriesByCategoryAction( entries ) )
 
     } catch ( error ) {
 
-        console.error( error )
-
-        state.dispatch( state.getCategoriesAction([]) )
-        state.dispatch( state.setCategoryAction( null ) )
-        state.dispatch( state.getEntriesByCategoryAction([]) )
-        
+        console.error( error )        
         
     } finally {
 
-        const { cookies } = request
+        const login = request.session.isAuth || false
+        const userLogged = request.session.userLogged || null
+        const [ register ] = request.flash('register')
+        const [ errorsLogin ] = request.flash('errorsLogin')
+        const [ errorsRegister ] = request.flash('errorsRegister')
         
         const data = {
-            ...state.getState(), 
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null,
+            login,
+            userLogged,
+            register,
+            errorsLogin,
+            errorsRegister,
+            categories,
+            year: new Date().getFullYear(),
+            category,
+            entries
         }
 
         response.render('category', data )
-
-        state.clearState()
     }
 })
 

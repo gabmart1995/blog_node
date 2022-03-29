@@ -278,8 +278,12 @@ function getEntriesByCategory( idCategory ) {
             }
 
             // console.log( results )
+            if ( results.length > 0 ) {
+                resolve( results.map( formatEntries ) )
+                return
+            }
 
-            resolve( results.map( formatEntries ) )
+            resolve(null)
         })
     })
 }
