@@ -4,7 +4,7 @@ const path = require('path')
 function loggedMiddleware( request, response, next ) {
     
     if ( request.session.isAuth ) {
-        
+
         next()
         
         return
@@ -56,6 +56,9 @@ function logsMiddleware( request, response, next ) {
 
         console.log( log )
     })
+
+    // pass year in request
+    request.year = new Date().getFullYear()
 
     next()
 }

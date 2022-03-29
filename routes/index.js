@@ -41,7 +41,7 @@ router.get('/', async ( request, response ) => {
             login,
             errorsLogin: errorsLogin || null,
             userLogged: request.session.userLogged || null,
-            year: new Date().getFullYear()
+            year: request.year || new Date().getFullYear()
         })
     }
 })
@@ -194,7 +194,7 @@ router.get('/profile', [ loggedMiddleware ], async ( request, response ) => {
         login, 
         userLogged,
         categories,
-        year: new Date().getFullYear(),
+        year: request.year || new Date().getFullYear(),
         register: register || false,
         errorsRegister: errorsRegister || null,
         login,
@@ -294,7 +294,7 @@ router.get('/create-category', [ loggedMiddleware ], async ( request, response )
         const [ errorsCategory ] = request.flash('errorsCategory')
         
         response.render('create-category', {
-            year: new Date().getFullYear(),
+            year: request.year || new Date().getFullYear(),
             categories,
             register: register || false,
             errorsRegister: errorsRegister || null,
@@ -397,7 +397,7 @@ router.get('/category', async ( request, response ) => {
             errorsLogin,
             errorsRegister,
             categories,
-            year: new Date().getFullYear(),
+            year: request.year || new Date().getFullYear(),
             category,
             entries
         }
@@ -409,30 +409,37 @@ router.get('/category', async ( request, response ) => {
 // entries
 router.get('/create-entries', [ loggedMiddleware ], async ( request, response ) => {
 
+    let categories = null
+
     try {
 
-        const categories = await helpers.getCategories()
-        state.dispatch( state.getCategoriesAction( categories ) )
+        categories = await helpers.getCategories()
 
     } catch ( error ) {
 
         console.error( error )
-        state.dispatch( state.getCategoriesAction( null ) )
 
     } finally {
 
-        // console.log( state.getState() )        
-        const { cookies } = request
+        const login = request.session.isAuth || false
+        const userLogged = request.session.userLogged || null
+        const [ register ] = request.flash('register')
+        const [ errorsLogin ] = request.flash('errorsLogin')
+        const [ errorsRegister ] = request.flash('errorsRegister')
+        const [ errorsEntries ] = request.flash('errorsEntries')
+
         const data = {
-            ...state.getState(), 
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null,
+            register,
+            errorsLogin,
+            errorsRegister,
+            errorsEntries, 
+            login, 
+            userLogged,
+            categories, 
+            year: request.year || new Date().getFullYear()
         }
         
         response.render('create-entries', data)
-
-        state.clearState()
     }
 })
 
@@ -440,6 +447,7 @@ router.post('/save-entries', async ( request, response ) => {
 
     const form = request.body
     const errorsEntries = new Map()
+    const userLogged = request.session.userLogged || null
 
     if ( !form.titulo || !regex.descriptionString.test( form.titulo ) ) {
         errorsEntries.set('titulo', 'El titulo de la entrada no es valido')
@@ -451,21 +459,18 @@ router.post('/save-entries', async ( request, response ) => {
     }
 
     if ( !form.categoria || !regex.onlyNumbers.test( form.categoria ) ) {
-        errorsEntries.set('categoria', 'debe seleccionar al menos una categoria')
+        errorsEntries.set('categoria', 'categoría requerida')
     }
 
     if ( errorsEntries.size > 0 ) {
 
         // console.log( errorsEntries )
 
-        state.dispatch( state.registerAction( false ) )
-        state.dispatch( 
-            state.errorsEntriesAction({
-                titulo: errorsEntries.get('titulo'),
-                descripcion: errorsEntries.get('descripcion'),
-                categoria: errorsEntries.get('categoria')
-            }) 
-        )
+        request.flash('errorsEntries', {
+            titulo: errorsEntries.get('titulo'),
+            descripcion: errorsEntries.get('descripcion'),
+            categoria: errorsEntries.get('categoria')
+        })
 
         response.redirect('/create-entries')
 
@@ -475,16 +480,12 @@ router.post('/save-entries', async ( request, response ) => {
         
         try {
             
-            const { cookies } = request
-
             await helpers.createEntries({ 
                 titulo: form.titulo.trim(),
                 descripcion: form.descripcion.trim(),
-                usuario_id: JSON.parse( cookies.session_id ).userLogged.id,
+                usuario_id: userLogged.id,
                 categoria_id: Number( form.categoria )
             })
-
-            state.dispatch( state.registerAction( true ) )
 
             response.redirect('/')
             
@@ -492,16 +493,10 @@ router.post('/save-entries', async ( request, response ) => {
 
             // console.log( error.message )
 
-            state.dispatch( state.registerAction( false ) )
-            state.dispatch( 
-                state.errorsEntriesAction({
-                    titulo: errorsEntries.get('titulo'),
-                    descripcion: errorsEntries.get('descripcion'),
-                    categoria: errorsEntries.get('categoria'),
-                    general: error.message
-                }) 
-            )
-
+            request.flash({
+                general: error.message
+            }) 
+            
             response.redirect('/create-entries')
         }
     }
@@ -510,32 +505,47 @@ router.post('/save-entries', async ( request, response ) => {
 // get entry
 router.get('/entries', async ( request, response ) => {
     
+    let entries = null
+    let categories = null
+
     try {
-        const entries = await helpers.getAllEntries()
-        const categories = await helpers.getCategories()
-
-        // console.log( entries )
-
-        state.dispatch( state.getCategoriesAction( categories ) )
-        state.dispatch( state.getEntriesAction( entries ) )
+        entries = await helpers.getAllEntries()
+        categories = await helpers.getCategories()
 
     } catch (error) {
 
-        state.dispatch( state.getCategoriesAction([]) )
-        state.dispatch( state.getEntriesAction([]) )
+        console.error(error)
     
     } finally {
-        response.render('entries', state.getState())
-        state.clearState()
+
+        const login = request.session.isAuth || false
+        const userLogged = request.session.userLogged || null
+        const [ register ] = request.flash('register')
+        const [ errorsLogin ] = request.flash('errorsLogin')
+        const [ errorsRegister ] = request.flash('errorsRegister')
+        
+        response.render('entries', {
+            categories,
+            year: request.year || new Date().getFullYear(),
+            login,
+            userLogged,
+            register,
+            errorsRegister,
+            errorsLogin,
+            entries
+        })
     }
 })
 
 router.get('/entry', async ( request, response ) => {
 
     const { id } = request.query
-    const { cookies } = request
-
+    
     let isAuthor = false  // flag autor del post
+    let categories = null
+    let entry = null
+
+    const userLogged = request.session.userLogged || null
 
     if ( !regex.onlyNumbers.test( id ) ) {
         response.redirect('/')
@@ -544,45 +554,41 @@ router.get('/entry', async ( request, response ) => {
 
     try {
 
-        const categories = await helpers.getCategories()
-        const entry = await helpers.getEntry( Number( id ) )
+        categories = await helpers.getCategories()
+        entry = await helpers.getEntry( Number( id ) )
         
-        if ( 'session_id' in cookies ) {
-            isAuthor = entry.usuario_id === JSON.parse( cookies.session_id ).userLogged.id;
-        }
-
-        state.dispatch( state.getCategoriesAction( categories ) )
-        state.dispatch( state.setEntryAction( entry ) )
-        
-        // console.log( entry )
+        isAuthor = entry.usuario_id === userLogged.id;
 
     } catch ( error ) {
-
-        state.dispatch( state.getCategoriesAction([]) )
-        state.dispatch( state.setEntryAction( null ) )
-
-        // console.log( error )
+        console.log( error )
     
     } finally {
 
+        const login = request.session.isAuth
+        const [ register ] = request.flash('register')
+        const [ errorsLogin ] = request.flash('errorsLogin')
+        const [ errorsRegister ] = request.flash('errorsRegister')
+
         const data = {
-            ...state.getState(), 
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null,
-            isAuthor
+            categories,
+            year: request.year || new Date().getFullYear(), 
+            login, 
+            userLogged,
+            isAuthor,
+            register,
+            errorsRegister,
+            errorsLogin,
+            entry
         }
 
         response.render('entry', data )
-
-        state.clearState()
     }
 })
 
 router.get('/delete-entry', async ( request, response ) => {
     
     const { id } = request.query
-    const { cookies } = request
+    const userLogged = request.session.userLogged || null
 
     if ( !regex.onlyNumbers.test( id ) ) {
         
@@ -593,10 +599,7 @@ router.get('/delete-entry', async ( request, response ) => {
     
     try {
         
-        await helpers.deleteEntry( Number( id ), JSON.parse( cookies.session_id ).userLogged.id )
-
-        state.dispatch( state.setDelete() )
-        
+        await helpers.deleteEntry( Number( id ), userLogged.id )
 
     } catch ( error ) {
 
@@ -605,14 +608,14 @@ router.get('/delete-entry', async ( request, response ) => {
     } finally {
 
         response.redirect('/')
-        
-        // state.clearState()
     }
 })
 
 router.get('/edit-entry', [ loggedMiddleware ], async ( request, response ) => {
 
     const { id } = request.query
+    let categories = null
+    let entry = null
 
     if ( !regex.onlyNumbers.test( id ) ) {
         
@@ -622,37 +625,42 @@ router.get('/edit-entry', [ loggedMiddleware ], async ( request, response ) => {
 
     try {
         
-        const entry = await helpers.getEntry( Number( id ) )
+        entry = await helpers.getEntry( Number( id ) )
         
         if ( !entry ) {
             response.redirect('/')
             return
         }
         
-        const categories = await helpers.getCategories()
-
-        state.dispatch( state.setEntryAction( entry ) )
-        state.dispatch( state.getCategoriesAction( categories ) )
+        categories = await helpers.getCategories()
 
     } catch ( error ) {
 
         console.error( error )
-
-        state.dispatch( state.setEntryAction( null ) )
-        state.dispatch( state.getCategoriesAction([]) )
-
     } 
-    
-    const { cookies } = request
+
+    const login = request.session.isAuth
+    const [ register ] = request.flash('register')
+    const [ errorsLogin ] = request.flash('errorsLogin')
+    const [ errorsRegister ] = request.flash('errorsRegister')
+    const userLogged = request.session.userLogged || null
+    const [ update ] = request.flash('update')
+    const [ errorsEntries ] = request.flash('errorsEntries')
+
     const data = {
-        ...state.getState(), 
-        login: 'session_id' in cookies || false, 
-        userLogged: 'session_id' in cookies ? 
-            JSON.parse( cookies.session_id ).userLogged : null,
+        login,
+        register,
+        errorsLogin,
+        errorsRegister,
+        userLogged,
+        categories,
+        entry,
+        update,
+        errorsEntries,
+        year: request.year || new Date().getFullYear()
     }
 
     response.render('edit-entries', data )
-    state.clearState()
 })
 
 router.post('/update-entries', async ( request, response ) => {
@@ -660,6 +668,7 @@ router.post('/update-entries', async ( request, response ) => {
     const form = request.body
     const { id } = request.query
     const errorsEntries = new Map()
+    const userLogged = request.session.userLogged || null
     
     // console.log({ id, form })
 
@@ -682,17 +691,12 @@ router.post('/update-entries', async ( request, response ) => {
     if ( errorsEntries.size > 0 ) {
 
         // console.log( errorsEntries )
-
-        state.dispatch( 
-            state.errorsEntriesAction({
-                titulo: errorsEntries.get('titulo'),
-                descripcion: errorsEntries.get('descripcion'),
-                categoria: errorsEntries.get('categoria'),
-                id: errorsEntries.get('id')
-            }) 
-        )
-
-        state.dispatch( state.updateAction( false ) )
+        request.flash('errorsEntries', {
+            titulo: errorsEntries.get('titulo'),
+            descripcion: errorsEntries.get('descripcion'),
+            categoria: errorsEntries.get('categoria'),
+            id: errorsEntries.get('id')
+        }) 
                 
     } else {
         
@@ -704,24 +708,16 @@ router.post('/update-entries', async ( request, response ) => {
                 ...form, 
                 categoria: Number( form.categoria ), 
                 id: Number( id ), 
-                usuario_id: JSON.parse( request.cookies.session_id ).userLogged.id
+                usuario_id: userLogged.id
             })
 
-            state.dispatch( state.updateAction( true ) )
+            request.flash('update', true)
             
         } catch ( error ) {
-        
-            state.dispatch( 
-                state.errorsEntriesAction({
-                    titulo: errorsEntries.get('titulo'),
-                    descripcion: errorsEntries.get('descripcion'),
-                    categoria: errorsEntries.get('categoria'),
-                    id: errorsEntries.get('id'),
-                    general: error.message
-                })
-            )
+            
+            console.error( error )
 
-            state.dispatch( state.updateAction( false ) )
+            request.flash('general', { general: error.message })
         }
     }
     
@@ -733,7 +729,8 @@ router.post('/search', async ( request, response ) => {
     const form = request.body
     const errorsSearch = new Map()
 
-    // console.log( form )
+    let entries = null
+    let categories = null
 
     if ( !regex.string.test( form.busqueda ) ) {
         errorsSearch.set('search', 'El patrón de busqueda no es válido')
@@ -743,81 +740,87 @@ router.post('/search', async ( request, response ) => {
         
         // console.log( errorsSearch )
         
-        state.dispatch( 
-            state.setErrorsSearchAction({ busqueda: errorsSearch.get('search') }) 
-        )
+        request.flash('errorsSearch', {
+            search: errorsSearch.get('search')
+        })
         
     } else {
 
         try {
             
-            const entries = await helpers.searchEntries({ search: '%' + form.busqueda + '%' })
-            const categories = await helpers.getCategories()
+            entries = await helpers.searchEntries({ search: '%' + form.busqueda + '%' })
+            categories = await helpers.getCategories()
 
             // console.log( entries )
 
-            state.dispatch( state.getEntriesAction( entries ) )
-            state.dispatch( state.getCategoriesAction( categories ) )
-
         } catch ( error ) {
-            
-            state.dispatch( state.getEntriesAction([]) )
-            state.dispatch( state.getCategoriesAction([]) )
+        
+            console.error( error )
 
-            state.dispatch( 
-                state.setErrorsSearchAction({ 
-                    search: errorsSearch.get('search'), 
-                    general: error.message
-                }) 
-            )
+            request.flash('errorsSearch', {
+                general: error.message
+            })
         }
     }
+    
+    const login = request.session.isAuth
+    const [ register ] = request.flash('register')
+    const [ errorsLogin ] = request.flash('errorsLogin')
+    const [ errorsRegister ] = request.flash('errorsRegister')
+    const userLogged = request.session.userLogged || null
 
-    const { cookies } = request
     const data = {
-        ...state.getState(), 
-        login: 'session_id' in cookies || false, 
-        userLogged: 'session_id' in cookies ? 
-            JSON.parse( cookies.session_id ).userLogged : null,
-            search: form.busqueda
+        search: form.busqueda,
+        login,
+        categories,
+        register,
+        errorsSearch,
+        errorsLogin,
+        errorsRegister,
+        userLogged,
+        entries,
+        year: request.year || new Date().getFullYear()
     }
 
     // renderiza la vista de resultados
     response.render('search', data )
-
-    state.clearState()
 })
 
 // route 404
 router.all('*', async ( request, response ) => {
 
+    let categories = null
+
     try {
         
-        const categories = await helpers.getCategories()
-
-        state.dispatch( state.getCategoriesAction( categories ) )
+        categories = await helpers.getCategories()
 
     } catch ( error ) {
         
         console.error( error )
-
-        state.dispatch( state.getEntriesAction([]) )
     
     } finally {
 
-        const { cookies } = request
-        const data = {
-            ...state.getState(), 
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null,
+            
+        const login = request.session.isAuth
+        const [ register ] = request.flash('register')
+        const [ errorsLogin ] = request.flash('errorsLogin')
+        const [ errorsRegister ] = request.flash('errorsRegister')
+        const userLogged = request.session.userLogged || null
+
+        const data = { 
+            login, 
+            userLogged,
+            categories,
+            register,
+            errorsRegister,
+            errorsLogin,
+            year: request.year || new Date().getFullYear()
         }
 
         response
             .status(404)
             .render('404', data )
-
-        state.clearState()
     }
 
 })
