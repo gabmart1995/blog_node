@@ -2,7 +2,7 @@
 <%- include('partials/sidebar', { login, errorsLogin, register, errorsRegister })  %> 
 <div id="principal">
     <h1>Mis datos</h1>
-    <% if (register) { %>
+    <% if (update) { %>
         <div class="alerta alerta-exito">Actualizacion de usuario completada</div>
     <% } %>
     
@@ -10,39 +10,34 @@
         <div class="alerta alerta-error"><%= errorsProfile.general %></div>
     <% } %>
 
-    <p class="alerta" style="background-color: black;">
-        El usuario actualizado con éxito tiene que volver a authenticarse,
-        para volver a registrar la session.
-    </p>
-
     <form action="/update-profile" method="POST">
 
         <label for="name">Nombre</label>
-        <input type="text" name="name" id="name" required maxlength="25" pattern="^[A-Za-z]{1,25}$" />
+        <input type="text" name="name" id="name" value="<%= profile.nombre %>" />
         <% if (errorsProfile && errorsProfile.name) { %>
             <div class="alerta alerta-error"><%= errorsProfile.name %></div>
         <% } %>
 
         <label for="surname">Apellidos</label>
-        <input type="text" name="surname" id="surname" required maxlength="25" pattern="^[A-Za-z]{1,25}$" />
+        <input type="text" name="surname" id="surname" value="<%= profile.apellidos %>" />
         <% if (errorsProfile && errorsProfile.surname) { %>
             <div class="alerta alerta-error"><%= errorsProfile.surname %></div>
         <% } %>
 
         <label for="email-register">Email</label>
-        <input type="email" name="email" id="email-register" required />
+        <input type="email" name="email" id="email-register" value="<%= profile.email %>" />
         <% if (errorsProfile && errorsProfile.email) { %>
             <div class="alerta alerta-error"><%= errorsProfile.email %></div>
         <% } %>
 
         <label for="password-register">Password</label>
-        <input type="password" name="password" id="password-register" minlength="8" required />
+        <input type="password" name="password" id="password-register" />
         <% if (errorsProfile && errorsProfile.password) { %>
             <div class="alerta alerta-error"><%= errorsProfile.password %></div>
         <% } %>
 
-        <input type="submit" value="Actualizar" disabled />
+        <input type="submit" value="Actualizar" />
     </form>
-    <script src="js/profile-validator.js"></script>
+    <!-- <script src="js/profile-validator.js"></script> -->
 </div>
 <%- include('partials/footer', { year }) %>

@@ -8,82 +8,107 @@ const { loggedMiddleware } = require('../middleware/middleware')
 const regex = Object.freeze({
     string: (/^[A-Za-z\s]{1,25}$/),
     descriptionString: (/^[\w\.\,\s]{1,1000}$/),
-    emailString: (/^[a-z0-9]+@[a-z]{4,}\.[a-z]{3,}$/),
+    emailString: (/^[a-z\_0-9]+@[a-z]{4,}\.[a-z]{3,}$/),
     onlyNumbers: (/^[0-9]+$/) 
 })
 
 // index
 router.get('/', async ( request, response ) => {
 
-    // console.log( 'session_id' in request.cookies )
+    let categories = []
+    let lastEntries = []
 
     try {
-
-        const categories = await helpers.getCategories()
-        state.dispatch( state.getCategoriesAction( categories ) )
         
-        const lastEntries = await helpers.getLastEntries()
-        state.dispatch( state.getLastEntriesAction( lastEntries ) )
-
+        categories = await helpers.getCategories()
+        lastEntries = await helpers.getLastEntries()
+    
     } catch ( error ) {
-
-        state.dispatch( state.getCategoriesAction([]) )
-        state.dispatch( state.getLastEntriesAction([]) )
-        
         console.log( error )
-        
+    
     } finally {
-        
-        const { cookies } = request
 
-        // console.log( state.getState() )
-        
-        response.render('index', { 
-            ...state.getState(), 
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null
+        const login = request.session.isAuth || false
+        const [ register ] = request.flash('register')
+        const [ errorsLogin ] = request.flash('errorsLogin')
+        const [ errorsRegister ] = request.flash('errorsRegister')
+
+        response.render('index', {
+            categories,
+            lastEntries,
+            register: register || false,
+            errorsRegister: errorsRegister || null,
+            login,
+            errorsLogin: errorsLogin || null,
+            userLogged: request.session.userLogged || null,
+            year: new Date().getFullYear()
         })
-
-
-        // limpia el estado despues de renderizar la vista
-        // para la limpieza de los formularios
-        state.clearState()
-
     }
+})
+
+// login
+router.post('/login', async ( request, response ) => {
+    
+    const form = request.body
+    const errorsLogin = new Map()
+
+    if ( !form.email || !regex.emailString.test( form.email.trim() )  ) {
+        errorsLogin.set('email', 'El email no es valido')
+    }
+
+    if ( !form.password || form.password.trim().length === 0 ) {
+        errorsLogin.set('password', 'El password no es valido')
+    }
+
+    if ( errorsLogin.size > 0 ) {
+
+        request.flash('errorsLogin', {
+            email: errorsLogin.get('email'),
+            password: errorsLogin.get('password')
+        })
+    
+    } else {
+        
+        try {
+            
+            const userLogged = await helpers.loginUser( form )
+
+            request.session.userLogged = userLogged
+            request.session.isAuth = true
+
+            // guarda los cambios de la session en el store
+            request.session.save(( error ) => {
+
+                if ( error ) {
+                    console.error( error )
+                }
+            })  
+
+        } catch ( error ) {
+            
+            request.flash('errorsLogin', {
+                general: error.message
+            })
+        }
+    }
+
+    response.redirect('/')
 })
 
 // logout session
 router.get('/logout', async ( request, response ) => {
 
-    const STATE = state.getState()
+    // limpia la session
+    request.session.destroy(( error ) => {
 
-    if ( STATE.login ) {
-        state.dispatch( state.logoutAction() )
-    }
-
-    // console.log( STATE )
-
-    try {
-
-        await helpers.deleteSesion({ session_id: request.session.id })
-
-        request.session.isAuth = false
-
-        // limpia las cookie
-        response.clearCookie('session_id')
-        response.clearCookie('connect.sid')
-
-        // destruye la session
-        request.session.destroy()
+        if ( error ) {
+            console.error( error )
+            
+            return
+        }
     
-    } catch ( error ) {
-
-        console.error( error )
-    }
-
-
-    response.redirect('/')
+        response.redirect('/')
+    })
 })
 
 // register
@@ -108,76 +133,76 @@ router.post('/register', async ( request, response ) => {
         errors.set('password', 'password esta vacio')
     }
 
-    // comprobacion del Map Object
     if ( errors.size > 0 ) {
-        
-        // console.log( errors )
 
-        state.dispatch( state.registerAction( false ) )
-        state.dispatch( 
-            state.errorsRegisterAction({
-                name: errors.get('name'),
-                surname: errors.get('surname'),
-                email: errors.get('email'),
-                password: errors.get('password')
-            }) 
-        )
+        request.flash('errorsRegister', {
+            name: errors.get('name'),
+            surname: errors.get('surname'),
+            email: errors.get('email'),
+            password: errors.get('password')
+        })
 
     } else {
-        
+
         try {
                 
             await helpers.insertUser( form );
 
-            state.dispatch( state.registerAction( true ) )
+            request.flash('register', true)
             
         } catch ( error ) {
 
             // console.error( error )
+
             errors.set('general', 'Fallo al guardar usuario')
 
-            state.dispatch( state.registerAction( false ) )
-            state.dispatch( 
-                state.errorsRegisterAction({
-                    name: errors.get('name'),
-                    surname: errors.get('surname'),
-                    email: errors.get('email'),
-                    password: errors.get('password'),
-                    general: errors.get('general')
-                }) 
-            )
+            request.flash('errorsRegister', {
+                general: error.message
+            })
         }
     }
 
-    // redirecciona al index
-    response.redirect('/');
+    response.redirect('/')
 })
 
 // profile
 router.get('/profile', [ loggedMiddleware ], async ( request, response ) => {
 
-    try {
-        const categories = await helpers.getCategories()  
-        state.dispatch( state.getCategoriesAction( categories ) )      
+    const userLogged = request.session.userLogged || null
     
-    } catch ( error ) {
+    let categories = []
+    let profile = null
 
-        state.dispatch( state.getCategoriesAction([]) )
+    try {
+
+        categories = await helpers.getCategories()  
+        profile = await helpers.getUserLogged( userLogged.id )
+
+    } catch ( error ) {
         console.log( error )
     
-    } finally {
-        
-        const { cookies } = request
-
-        response.render('profile', { 
-            ...state.getState(),
-            login: 'session_id' in cookies || false, 
-            userLogged: 'session_id' in cookies ? 
-                JSON.parse( cookies.session_id ).userLogged : null
-        })
-        
-        state.clearState()
     }
+
+    const login = request.session.isAuth || false
+    const [ register ] = request.flash('register')
+    const [ update ] = request.flash('update')
+    const [ errorsLogin ] = request.flash('errorsLogin')
+    const [ errorsRegister ] = request.flash('errorsRegister')
+    const [ errorsProfile ] = request.flash('errorsProfile')
+
+    response.render('profile', { 
+        login, 
+        userLogged,
+        categories,
+        year: new Date().getFullYear(),
+        register: register || false,
+        errorsRegister: errorsRegister || null,
+        login,
+        errorsLogin: errorsLogin || null,
+        errorsProfile: errorsProfile || null,
+        update,
+        profile 
+    })  
 })
 
 // update-user
@@ -185,7 +210,7 @@ router.post('/update-profile', async ( request, response ) => {
 
     const form = request.body
     const errorsProfile = new Map()
-    const userLogged = JSON.parse( request.cookies.session_id ).userLogged
+    const userLogged = request.session.userLogged
 
     if ( !form.name || !regex.string.test( form.name.trim() ) ) {
         errorsProfile.set('name', 'El nombre no es valido')
@@ -204,122 +229,46 @@ router.post('/update-profile', async ( request, response ) => {
     }
 
     if ( errorsProfile.size > 0 ) {
-        
-        // console.log( errorsProfile )
 
-        state.dispatch( state.registerAction( false ) )
-        state.dispatch( 
-            state.errorsProfileAction({
-                name: errorsProfile.get('name'),
-                surname: errorsProfile.get('surname'),
-                email: errorsProfile.get('email'),
-                password: errorsProfile.get('password')
-            })        
-        )
+        request.flash('errorsProfile', {
+            name: errorsProfile.get('name'),
+            surname: errorsProfile.get('surname'),
+            email: errorsProfile.get('email'),
+            password: errorsProfile.get('password')
+        })
     
     } else {
-        
+
         try {
             
-            await helpers.updateUser({ ...form, id: userLogged.id })
-            
-            // eliminamos la cookie y le pedimos al usuario que se authentique
-            // para registrar nuevamente la session
-            response.clearCookie('session_id')
+            const update = { ...form, id: userLogged.id  }
+
+            await helpers.updateUser( update )
+
+            request.flash('update', true)
+
+            request.session.userLogged = { 
+                ...update, 
+                nombre: update.name, 
+                apellidos: update.surname 
+            }
+
+            request.session.save(( error ) => {
+
+                if ( error ) {
+                    console.error( error )
+                }
+            })
         
         } catch ( error ) {
 
-            state.dispatch( state.registerAction( false ) )
-            state.dispatch( 
-                state.errorsProfileAction({
-                    name: errorsProfile.get('name'),
-                    surname: errorsProfile.get('surname'),
-                    email: errorsProfile.get('email'),
-                    password: errorsProfile.get('password'),
-                    general: error.message
-                }) 
-            )
-
+            request.flash('errorsProfile', {
+                general: error.message
+            })
         }
     }
 
     response.redirect('/profile')
-})
-
-// login
-router.post('/login', async ( request, response ) => {
-    
-    const form = request.body
-    const errorsLogin = new Map()
-
-    if ( !form.email || !regex.emailString.test( form.email.trim() )  ) {
-        errorsLogin.set('email', 'El email no es valido')
-    }
-
-    if ( !form.password || form.password.trim().length === 0 ) {
-        errorsLogin.set('password', 'El password no es valido')
-    }
-
-    // comprobacion de errores
-    if ( errorsLogin.size > 0 ) {
-    
-        state.dispatch( state.loginAction( false ) )
-        state.dispatch( 
-            state.errorsLoginAction({
-                email: errorsLogin.get('email'),
-                password: errorsLogin.get('password')
-            }) 
-        )
-        
-    } else {
-        
-        try {
-            
-            const userLogged = await helpers.loginUser( form )
-            const TIME_EXPIRED_SESSION = ( 1000 * 60 * 60 * 24 ) 
-
-            request.session.isAuth = true
-
-            // registramos en la bd la session del usuario
-            await helpers.createSesion({
-                session_id: request.session.id,
-                expires: Date.now() + TIME_EXPIRED_SESSION,
-                data: ''
-            })
-
-            // enviamos la cookie al cliente
-            response.cookie(
-                'session_id', 
-                JSON.stringify({
-                    session_id: request.session.id,
-                    userLogged: { ...userLogged }
-                }),  
-                { maxAge: TIME_EXPIRED_SESSION }
-            )
-            
-            // establecemos el estado
-            state.dispatch( state.loginAction( true ) )
-            state.dispatch( state.userLoggedAction( userLogged ) )
-
-            // console.log( request.session.id )
-            
-        } catch ( error ) {
-            
-            console.error( error )
-
-            state.dispatch( state.loginAction( false ) )
-            state.dispatch( 
-                state.errorsLoginAction({
-                    email: errorsLogin.get('email'),
-                    password: errorsLogin.get('password'),
-                    general: error.message
-                }) 
-            )   
-        }
-    
-    }
-
-    response.redirect('/')
 })
 
 // category

@@ -12,7 +12,9 @@
             <% if (login) { %>
                 
                 <div id="usuario-logueado" class="bloque">
-                    <h3>Bienvenido, <%= userLogged.nombre %> <%= userLogged.apellidos %></h3>
+                    <% if (userLogged) { %>
+                        <h3>Bienvenido, <%= userLogged.nombre %> <%= userLogged.apellidos %></h3>
+                    <% } %>
                     <a href="/create-entries" class="boton boton-verde">Crear entradas</a>
                     <a href="/create-category" class="boton">Crear categorias</a>
                     <a href="/profile" class="boton boton-naranja">Mis datos</a>
@@ -31,18 +33,18 @@
                     <form action="/login" method="POST">
 
                         <label for="email-login">Email</label>
-                        <input type="email" name="email" id="email-login" required />
+                        <input type="email" name="email" id="email-login" />
                         <% if (errorsLogin && errorsLogin.email ) { %>
                             <div class="alerta alerta-error"><%= errorsLogin.email %></div>
                         <% } %>
                         
                         <label for="password-login">Password</label>
-                        <input type="password" name="password" required minlength="8" id="password-login" />
+                        <input type="password" name="password" />
                         <% if (errorsLogin && errorsLogin.password ) { %>
                             <div class="alerta alerta-error"><%= errorsLogin.password %></div>
                         <% } %>
 
-                        <input type="submit" value="Entrar" disabled />
+                        <input type="submit" value="Entrar"  />
                     </form>
                 </div>
             
@@ -62,14 +64,14 @@
                     <form action="/register" method="POST">
 
                         <label for="name">Nombre</label>
-                        <input type="text" name="name" id="name" minlength="2" required maxlength="25" pattern="^[\w\s]{1,25}$" />
+                        <input type="text" name="name" id="name" minlength="2" />
                         <% if (errorsRegister && errorsRegister.name) { %>
                             <div class="alerta alerta-error"><%= errorsRegister.name %></div>
                         <% } %>
         
 
                         <label for="surname">Apellidos</label>
-                        <input type="text" name="surname" id="surname" maxlength="25" pattern="^[\w\s]{1,25}$" required />
+                        <input type="text" name="surname" id="surname" />
                         <% if (errorsRegister && errorsRegister.surname) { %>
                             <div class="alerta alerta-error"><%= errorsRegister.surname %></div>
                         <% } %>
@@ -81,16 +83,16 @@
                         <% } %>
 
                         <label for="password-register">Password</label>
-                        <input type="password" name="password" id="password-register" minlength="8" required />
+                        <input type="password" name="password" id="password-register" />
                         <% if (errorsRegister && errorsRegister.password) { %>
                             <div class="alerta alerta-error"><%= errorsRegister.password %></div>
                         <% } %>
                         
-                        <input type="submit" value="Registrar" disabled />
+                        <input type="submit" value="Registrar" />
                     </form>
                 </div>
             <% } %> 
 
         </aside>
         <!-- index validator -->
-        <script src="js/index-validator.js"></script>
+        <!-- <script src="js/index-validator.js"></script> -->

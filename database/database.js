@@ -18,7 +18,8 @@ const SQL = Object.freeze({
     searchEntries: 'SELECT e.*, c.nombre AS categoria, c.id AS categoria_id FROM entradas e INNER JOIN categorias c ON e.categoria_id = c.id WHERE e.titulo LIKE :search ORDER BY e.id DESC;',
     createSession: 'INSERT INTO blog_sessions VALUES( :session_id, :expires, :data );',
     deleteSession: 'DELETE FROM blog_sessions WHERE session_id = :session_id;',
-    getSession: 'SELECT * FROM blog_sessions WHERE session_id = :session_id;'
+    getSession: 'SELECT * FROM blog_sessions WHERE session_id = :session_id;',
+    getUserLogged: 'SELECT nombre, apellidos, email FROM usuarios WHERE id = :id'
 })
 
 const connection = mysql.createConnection({

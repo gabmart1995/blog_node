@@ -3,8 +3,8 @@
 const EventEmitter = require('events')
 const path = require('path')
 const express = require('express')
-// const hbs = require('hbs')
 const session = require('express-session')
+const flash = require('connect-flash')
 
 const { connectDatabase, closeConnection } = require('./database/database')
 const cookieParser = require('cookie-parser')
@@ -39,6 +39,7 @@ function startServer( port = 8080 ) {
         .use( express.urlencoded({ extended: true }) )
         .use( cookieParser() )
         .use( logsMiddleware )
+        .use( flash() )
         .use( router )
 
 

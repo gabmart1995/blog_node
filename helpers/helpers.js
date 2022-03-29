@@ -481,6 +481,24 @@ function updateEntries( form ) {
     })
 }
 
+function getUserLogged( idUser ) {
+    return new Promise(( resolve, reject ) => {
+        executeQuery(SQL.getUserLogged, { id: idUser }, ( error, results ) => {
+            
+            if ( error ) {
+                
+                console.error( error )
+
+                reject( error )
+            
+                return
+            }
+
+            resolve( results[0] )
+        })
+    })
+}
+
 module.exports = {
     deleteSesion,
     insertUser,
@@ -498,5 +516,6 @@ module.exports = {
     updateEntries,
     searchEntries,
     createSesion,
-    getSession
+    getSession,
+    getUserLogged
 }
