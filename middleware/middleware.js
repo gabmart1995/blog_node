@@ -48,6 +48,10 @@ function logsMiddleware( request, response, next ) {
         // escribe los datos en el archivo
         const route = path.join( __dirname, '..', '/storage/express.log' )
 
+        if ( !fs.existsSync( route ) ) {
+            fs.mkdirSync( path.join(__dirname, '..', 'storage') )
+        }
+
         fs.appendFile( route, (log + "\n"), ( error ) => {
             if ( error ) {
                 console.error( error )
