@@ -2,8 +2,9 @@
 <%- include('partials/sidebar', { login, errorsLogin, register, errorsRegister })  %> 
 <div id="principal">
     <h1>Mis datos</h1>
+
     <% if (update) { %>
-        <div class="alerta alerta-exito">Actualizacion de usuario completada</div>
+        <div class="alerta alerta-exito">Actualización de usuario completada</div>
     <% } %>
     
     <% if (errorsProfile && errorsProfile.general) { %>

@@ -1,7 +1,7 @@
 'use strict'
 
 const EventEmitter = require('events')
-const path = require('path')
+// const path = require('path')
 const express = require('express')
 const session = require('express-session')
 const flash = require('connect-flash')
@@ -19,9 +19,6 @@ function startServer( port = 8080 ) {
     
     const databaseEmitter = new DatabaseEmitter()
 
-    // hbs.registerPartials( path.join( __dirname, 'public/partials' ))
-
-    // hbs
     app.set('view engine', 'ejs')
     app.set('views', 'public')
 
