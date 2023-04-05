@@ -1,8 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const helpers = require('../helpers/helpers')
-
-const state = require('../state/state')
 const { loggedMiddleware } = require('../middleware/middleware')
 
 const regex = Object.freeze({
@@ -103,7 +101,6 @@ router.get('/logout', async ( request, response ) => {
 
         if ( error ) {
             console.error( error )
-            
             return
         }
     
@@ -557,7 +554,7 @@ router.get('/entry', async ( request, response ) => {
         categories = await helpers.getCategories()
         entry = await helpers.getEntry( Number( id ) )
         
-        if (userLogged) {
+        if ( userLogged ) {
             isAuthor = entry.usuario_id === userLogged.id;
         }
 
