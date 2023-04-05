@@ -20,6 +20,6 @@
     "mysql": "2.18.1"
   },
   "devDependencies": {
-    "nodemon": "2.0.15"
+    "nodemon": "1.19.4"
   }
 }

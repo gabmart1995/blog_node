@@ -557,7 +557,9 @@ router.get('/entry', async ( request, response ) => {
         categories = await helpers.getCategories()
         entry = await helpers.getEntry( Number( id ) )
         
-        isAuthor = entry.usuario_id === userLogged.id;
+        if (userLogged) {
+            isAuthor = entry.usuario_id === userLogged.id;
+        }
 
     } catch ( error ) {
         console.log( error )
