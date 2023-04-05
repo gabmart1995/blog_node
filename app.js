@@ -1,7 +1,7 @@
 'use strict'
 
 const EventEmitter = require('events')
-// const path = require('path')
+const path = require('path')
 const express = require('express')
 const session = require('express-session')
 const flash = require('connect-flash')
@@ -20,7 +20,7 @@ function startServer( port = 8080 ) {
     const databaseEmitter = new DatabaseEmitter()
 
     app.set('view engine', 'ejs')
-    app.set('views', 'public')
+    app.set('views', path.resolve( __dirname, 'public') )
 
     // servir contenido estatico
     app
@@ -32,7 +32,7 @@ function startServer( port = 8080 ) {
                 maxAge: 1000 * 60 * 60 * 24
             }
         }))
-        .use( express.static('public/static') )
+        .use( express.static( path.resolve( __dirname, 'public', 'static') ) )
         .use( express.urlencoded({ extended: true }) )
         .use( cookieParser() )
         .use( logsMiddleware )

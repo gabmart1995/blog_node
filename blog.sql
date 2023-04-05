@@ -1,25 +1,25 @@
 CREATE TABLE IF NOT EXISTS usuarios(
-id          int(255) auto_increment not null,
+id          int auto_increment not null,
 nombre      varchar(100) not null,
 apellidos   varchar(100) not null,
-email       varchar(255) not null,
-password    varchar(255) not null,
+email       varchar(100) not null,
+password    varchar(100) not null,
 fecha       date not null,
 CONSTRAINT pk_usuarios PRIMARY KEY(id),
 CONSTRAINT uq_email UNIQUE(email)
 )ENGINE=InnoDb;
 
 CREATE TABLE IF NOT EXISTS categorias(
-id      int(255) auto_increment not null,
+id      int auto_increment not null,
 nombre  varchar(100),
 CONSTRAINT pk_categorias PRIMARY KEY(id)
 )ENGINE=InnoDb;
 
 CREATE TABLE IF NOT EXISTS entradas(
-id              int(255) auto_increment not null,
-usuario_id      int(255) not null,
-categoria_id    int(255) not null,
-titulo          varchar(255) not null,
+id              int auto_increment not null,
+usuario_id      int not null,
+categoria_id    int not null,
+titulo          varchar(100) not null,
 descripcion     MEDIUMTEXT,
 fecha           date not null,
 CONSTRAINT pk_entradas PRIMARY KEY(id),
